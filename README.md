@@ -1,22 +1,48 @@
-# PaperMate
+<p align="center">
+  <h1 align="center">PaperMate</h1>
+  <p align="center">面向中国大学生的论文写作智能体 · Human-in-the-loop Thesis Copilot</p>
+</p>
 
-PaperMate is an early-stage research and thesis-writing copilot for Chinese university students.
+<p align="center">
+  <a href="./README.md"><b>English</b></a> ·
+  <a href="./README_CN.md"><b>简体中文</b></a>
+</p>
 
-It is designed for students who do not yet know how to narrow a topic, search literature, organize evidence, and turn that material into a thesis structure. PaperMate is meant to assist the process, not replace the student.
+<p align="center">
+  <a href="https://github.com/Brayszieqw/PaperMate/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License" />
+  </a>
+  <a href="https://github.com/Brayszieqw/PaperMate/releases">
+    <img src="https://img.shields.io/github/v/release/Brayszieqw/PaperMate?color=green" alt="Release" />
+  </a>
+  <a href="https://github.com/Brayszieqw/PaperMate/stargazers">
+    <img src="https://img.shields.io/github/stars/Brayszieqw/PaperMate?style=social" alt="Stars" />
+  </a>
+  <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen" alt="Node" />
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome" />
+</p>
 
-> Status: early open-source WIP. The runtime and search layer are usable. End-to-end LLM drafting is still in progress.
+---
+
+> PaperMate is an early-stage, human-in-the-loop research and thesis-writing copilot for Chinese university students.
+>
+> It is designed for students who do not yet know how to narrow a topic, search literature, organize evidence, and turn that material into a thesis structure. PaperMate assists the process — it does not replace the student.
+
+> **Status**: Early open-source WIP. The runtime and search layer are usable. End-to-end LLM drafting is in progress.
+
+---
 
 ## Positioning
 
-PaperMate is not trying to be a general-purpose "write my whole paper" agent.
+PaperMate is not a "write my whole paper" agent.
 
-The first public scope is narrower:
+The first public scope is deliberately narrow:
 
 - Chinese undergraduate and master's thesis workflows
 - Human-in-the-loop research and writing assistance
-- Evidence-first search, notes, and draft preparation
+- Evidence-first search, note organization, and draft preparation
 
-The long-term architecture can support other languages and academic workflows, but that is not the current focus.
+The long-term architecture supports other languages and academic workflows, but that is not the current focus.
 
 ## Who it is for
 
@@ -42,12 +68,12 @@ The long-term architecture can support other languages and academic workflows, b
 
 Most writing agents optimize for maximum automation. PaperMate takes a different path:
 
-- Human-in-the-loop: pauses before high-stakes actions
-- Evidence-first: claims should stay tied to sources
-- Workflow-aware: topic framing, search, notes, drafting, review, and revision are different stages
-- Open and hackable: the runtime, contracts, and prompts are visible in the repo
+- **Human-in-the-loop** — pauses before high-stakes actions
+- **Evidence-first** — claims stay tied to sources
+- **Workflow-aware** — topic framing, search, notes, drafting, review, and revision are distinct stages
+- **Open and hackable** — the runtime, contracts, and prompts are all visible in the repo
 
-This makes it a better fit for students who need support and structure, but still need to understand and defend what they write.
+This makes PaperMate a better fit for students who need support and structure, but still need to understand and defend what they write.
 
 ## Current limitations
 
@@ -58,21 +84,9 @@ This makes it a better fit for students who need support and structure, but stil
 
 ## Quick start
 
-Install dependencies:
-
 ```bash
 npm install
-```
-
-Run tests:
-
-```bash
 npm run test:paper-writer
-```
-
-Run the smoke scenario:
-
-```bash
 npm run smoke:paper-writer
 ```
 
@@ -90,7 +104,7 @@ console.log(result.ui.guidance);
 console.log(result.runtime.searchArtifact.items.length, 'candidates found');
 ```
 
-For browser-backed arXiv retrieval, start Chrome with remote debugging and use:
+For browser-backed arXiv retrieval, start Chrome with remote debugging enabled, then:
 
 ```js
 const result = await runPaperWriterEntry({
@@ -104,26 +118,38 @@ const result = await runPaperWriterEntry({
 
 ```text
 PaperMate/
-|- agents/                  # agent prompts and role definitions
-|- commands/                # slash-command entry points
-|- docs/                    # design docs and runtime contracts
-|- plugins/                 # plugin integrations
-|- scripts/                 # runtime, search, session, and adapter code
-|- README.md
-|- ROADMAP.md
+├── .claude-plugin/         # Claude Code plugin manifest
+├── agents/                 # Agent prompts and role definitions
+├── commands/               # Slash-command entry points
+├── docs/                   # Design docs and runtime contracts
+├── scripts/                # Runtime, search, session, and adapter code
+├── skills/                 # Auto-activating skill definitions
+├── README.md
+└── ROADMAP.md
 ```
 
 ## Key files to read first
 
-- `agents/paper-writer/paper-writer.md`: core workflow prompt
-- `scripts/paper-writer-search-layer.js`: most mature implementation today
-- `docs/paper-writer/paper-writer-runtime-contracts.md`: runtime contracts and data model
-- `docs/paper-writer/progress-map.md`: implementation maturity and gaps
+- `agents/paper-writer/paper-writer.md` — core workflow prompt
+- `scripts/paper-writer-search-layer.js` — most mature implementation today
+- `docs/paper-writer/paper-writer-runtime-contracts.md` — runtime contracts and data model
+- `docs/paper-writer/progress-map.md` — implementation maturity and gaps
 
 ## Roadmap
 
-See `ROADMAP.md` for current priorities, limitations, and next milestones.
+See [ROADMAP.md](./ROADMAP.md) for current priorities, limitations, and next milestones.
+
+## Contributing
+
+Issues and PRs are welcome. Please open an issue first to discuss what you would like to change.
 
 ## License
 
-MIT
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+This means:
+- You can use, study, modify, and distribute this software
+- If you deploy a modified version as a network service, you must release your source code under the same license
+- Commercial use is permitted, but you cannot make it proprietary
+
+See [LICENSE](./LICENSE) for the full text.

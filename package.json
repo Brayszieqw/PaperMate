@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Early-stage human-in-the-loop thesis writing runtime for Chinese university workflows",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "scripts": {
     "test:paper-writer": "node --test scripts/paper-writer-*.test.js",
     "smoke:paper-writer": "node scripts/paper-writer-runtime-smoke.js",
