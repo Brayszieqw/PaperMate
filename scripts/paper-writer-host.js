@@ -246,9 +246,18 @@ async function dispatch(input, storeOptions = {}) {
 // ── CLI entry point ───────────────────────────────────────────────────────────
 
 if (require.main === module) {
+  const MAX_STDIN_BYTES = 10 * 1024 * 1024; // 10 MB
   let raw = '';
+  let byteCount = 0;
   process.stdin.setEncoding('utf8');
-  process.stdin.on('data', (chunk) => { raw += chunk; });
+  process.stdin.on('data', (chunk) => {
+    byteCount += Buffer.byteLength(chunk, 'utf8');
+    if (byteCount > MAX_STDIN_BYTES) {
+      process.stdout.write(JSON.stringify(buildErrorResponse(`input exceeds ${MAX_STDIN_BYTES} bytes`)) + '\n');
+      process.exit(1);
+    }
+    raw += chunk;
+  });
   process.stdin.on('end', async () => {
     let input;
     try {

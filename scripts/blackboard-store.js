@@ -2,13 +2,31 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 
-const STATE_DIR = path.join(os.homedir(), '.config', 'opencode', 'state', 'blackboards');
+const STATE_DIR = path.join(os.homedir(), '.papermate', 'state', 'blackboards');
+const SESSION_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
+
+function validateSessionId(sessionId) {
+  const normalized = typeof sessionId === 'string' ? sessionId.trim() : '';
+  if (!normalized) throw new Error('sessionId is required');
+  if (!SESSION_ID_PATTERN.test(normalized)) throw new Error(`invalid sessionId: ${sessionId}`);
+  return normalized;
+}
+
+function safeFilePath(sessionId) {
+  const safe = validateSessionId(sessionId);
+  const filePath = path.resolve(STATE_DIR, `${safe}.json`);
+  const relative = path.relative(STATE_DIR, filePath);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error(`session path escapes state dir: ${safe}`);
+  }
+  return filePath;
+}
 
 /**
  * Ensure state directory exists
  */
 async function ensureStateDir() {
-  await fs.promises.mkdir(STATE_DIR, { recursive: true });
+  await fs.promises.mkdir(STATE_DIR, { recursive: true, mode: 0o700 });
 }
 
 /**
@@ -18,7 +36,7 @@ async function ensureStateDir() {
  */
 async function saveBlackboard(sessionId, blackboard) {
   await ensureStateDir();
-  const filePath = path.join(STATE_DIR, `${sessionId}.json`);
+  const filePath = safeFilePath(sessionId);
   const data = {
     sessionId,
     timestamp: Date.now(),
@@ -33,7 +51,7 @@ async function saveBlackboard(sessionId, blackboard) {
  * @returns {object|null} Blackboard snapshot or null if not found
  */
 async function loadBlackboard(sessionId) {
-  const filePath = path.join(STATE_DIR, `${sessionId}.json`);
+  const filePath = safeFilePath(sessionId);
   try {
     const text = await fs.promises.readFile(filePath, 'utf8');
     const data = JSON.parse(text);

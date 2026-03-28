@@ -22,24 +22,46 @@ function extractTextWithPdftotext(filePath) {
   }
 }
 
+const ALLOWED_EXTENSIONS = new Set(['.pdf', '.txt', '.md']);
+
+/**
+ * Validate that a file path is safe to read:
+ * - Must have an allowed extension
+ * - Must resolve under cwd (prevent reading /etc/passwd etc.)
+ */
+function validateFilePath(filePath) {
+  const resolved = path.resolve(filePath);
+  const ext = path.extname(resolved).toLowerCase();
+  if (!ALLOWED_EXTENSIONS.has(ext)) {
+    throw new Error(`unsupported file type: ${ext} (allowed: ${[...ALLOWED_EXTENSIONS].join(', ')})`);
+  }
+  const cwd = process.cwd();
+  const relative = path.relative(cwd, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error(`file path must be under working directory: ${filePath}`);
+  }
+  return resolved;
+}
+
 /**
  * Read text from a file path.
  * Supports: .txt, .md (direct read), .pdf (via pdftotext).
  * Returns null if extraction fails.
  */
 function extractTextFromFile(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
+  const resolved = validateFilePath(filePath);
+  const ext = path.extname(resolved).toLowerCase();
 
   if (ext === '.txt' || ext === '.md') {
     try {
-      return fs.readFileSync(filePath, 'utf8');
+      return fs.readFileSync(resolved, 'utf8');
     } catch {
       return null;
     }
   }
 
   if (ext === '.pdf') {
-    return extractTextWithPdftotext(filePath);
+    return extractTextWithPdftotext(resolved);
   }
 
   return null;

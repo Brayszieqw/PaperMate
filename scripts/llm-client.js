@@ -33,6 +33,7 @@ function detectBackend() {
 }
 
 function httpRequest(url, options, body) {
+  const timeoutMs = options.timeout || 30000;
   return new Promise((resolve, reject) => {
     const parsed = new URL(url);
     const mod = parsed.protocol === 'https:' ? https : http;
@@ -42,6 +43,7 @@ function httpRequest(url, options, body) {
       path: parsed.pathname + parsed.search,
       method: options.method || 'POST',
       headers: options.headers || {},
+      timeout: timeoutMs,
     }, (res) => {
       const chunks = [];
       res.on('data', (chunk) => chunks.push(chunk));
@@ -58,6 +60,10 @@ function httpRequest(url, options, body) {
       });
     });
     req.on('error', reject);
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error(`HTTP request timed out after ${timeoutMs}ms: ${url}`));
+    });
     if (body) req.write(body);
     req.end();
   });
