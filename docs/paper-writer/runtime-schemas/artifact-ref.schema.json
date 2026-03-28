@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "paper-writer/artifact-ref.schema.json",
+  "title": "paper-writer artifact ref",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_id",
+    "artifact_type",
+    "version",
+    "producer",
+    "summary",
+    "source_refs",
+    "risk_flags"
+  ],
+  "properties": {
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "artifact_type": { "enum": ["literature_candidate_set", "structured_note_bundle", "evidence_pack", "chapter_outline", "chapter_draft", "review_verdict", "revision_memo"] },
+    "version": { "type": "string", "minLength": 1 },
+    "producer": { "enum": ["paper-writer", "paper-scout", "paper-library", "paper-drafter", "paper-research-ops", "paper-reviewer"] },
+    "summary": { "type": "string", "minLength": 1 },
+    "source_refs": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "risk_flags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "supersedes": { "type": ["string", "null"] }
+  }
+}

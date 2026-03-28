@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "paper-writer/route-packet.schema.json",
+  "title": "paper-writer route packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "user_goal",
+    "task_kind",
+    "domain_focus",
+    "current_phase",
+    "risk_level",
+    "evidence_state",
+    "automation_mode",
+    "route_strategy",
+    "recommended_next_agent",
+    "checkpoint_needed"
+  ],
+  "properties": {
+    "task_id": { "type": "string", "minLength": 1 },
+    "user_goal": { "type": "string", "minLength": 1 },
+    "task_kind": { "enum": ["single_step", "compound"] },
+    "domain_focus": { "enum": ["scout", "library", "draft", "ops", "review", "mixed", "topic-framing", "proposal-outline", "defense-prep", "revision-loop"] },
+    "current_phase": { "enum": ["intake", "scout", "library", "draft", "ops", "review", "finalize", "paused", "topic-framing", "proposal-outline", "defense-prep", "revision-loop"] },
+    "risk_level": { "enum": ["low", "medium", "high"] },
+    "evidence_state": { "enum": ["empty", "weak", "usable", "strong"] },
+    "automation_mode": { "enum": ["conservative", "balanced", "aggressive"] },
+    "route_strategy": { "enum": ["direct", "staged", "review_first", "evidence_first"] },
+    "recommended_next_agent": { "enum": ["paper-writer", "paper-scout", "paper-library", "paper-drafter", "paper-research-ops", "paper-reviewer"] },
+    "checkpoint_needed": { "enum": ["none", "soft", "hard", "block"] }
+  }
+}

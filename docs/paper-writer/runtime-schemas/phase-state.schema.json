@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "paper-writer/phase-state.schema.json",
+  "title": "paper-writer phase state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phase_id",
+    "phase_name",
+    "status",
+    "owner",
+    "input_artifacts",
+    "output_artifacts"
+  ],
+  "properties": {
+    "phase_id": { "type": "string", "minLength": 1 },
+    "phase_name": { "enum": ["intake", "scout", "library", "draft", "ops", "review", "finalize", "recovery", "topic-framing", "proposal-outline", "defense-prep", "revision-loop"] },
+    "status": { "enum": ["pending", "in_progress", "completed", "blocked", "paused"] },
+    "started_at": { "type": ["string", "null"] },
+    "completed_at": { "type": ["string", "null"] },
+    "owner": { "enum": ["paper-writer", "paper-scout", "paper-library", "paper-drafter", "paper-research-ops", "paper-reviewer"] },
+    "input_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "output_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": { "type": ["string", "null"] }
+  }
+}

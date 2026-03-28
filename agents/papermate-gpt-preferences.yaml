@@ -1,0 +1,54 @@
+# PaperMate GPT 用户偏好配置
+# 位置: C:\Users\ljx\.config\opencode\agents\papermate-gpt-preferences.yaml
+# 用途: 控制自动化程度、checkpoint 行为、回滚策略
+
+automation_level: conservative  # conservative | balanced | aggressive
+
+# conservative（保守模式，默认）:
+#   - planner 输出后必须等待用户确认
+#   - coder 写入超过 3 个文件时暂停
+#   - reviewer 失败时立即停止，不自动重试
+#   - 所有 bash 命令都需要 ask
+#
+# balanced（平衡模式）:
+#   - planner 自动执行，但 coder 前显示改动摘要
+#   - 允许自动重试 1 次
+#   - 危险命令（rm/drop/force-push）仍需确认
+#
+# aggressive（激进模式，仅用于熟悉的小任务）:
+#   - direct 模式直接执行
+#   - 失败后自动回滚 + 重试最多 2 次
+#   - 仅在涉及生产环境/外部服务时暂停
+
+checkpoint:
+  plan_approval: true          # planner 输出后是否等待确认
+  before_write: true           # coder 写入前是否显示 preview
+  after_verification: true     # 验证失败后是否等待用户决策
+  multi_file_threshold: 3      # 超过 N 个文件改动时强制 checkpoint
+
+git_snapshot:
+  enabled: true                # 是否在写入前自动 git stash
+  auto_commit: false           # 是否在每次改动后自动 commit（实验性）
+  stash_message_prefix: "papermate-checkpoint"
+
+rollback:
+  on_review_fail: ask          # ask | auto | never
+  on_verification_fail: ask    # ask | auto | never
+  max_auto_retry: 1            # 自动重试次数上限
+
+preview:
+  show_diff: true              # coder 写入前是否生成 diff preview
+  show_impact: true            # 是否显示影响范围分析
+  require_approval: true       # 是否需要用户明确批准
+
+dangerous_operations:
+  # 以下操作无论 automation_level 如何都需要确认
+  always_ask:
+    - "rm -rf"
+    - "git push --force"
+    - "drop table"
+    - "delete from"
+    - "kubectl delete"
+    - "terraform destroy"
+    - "npm publish"
+    - "docker rmi"

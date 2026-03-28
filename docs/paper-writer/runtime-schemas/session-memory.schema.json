@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "paper-writer/session-memory.schema.json",
+  "title": "paper-writer session memory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "current_goal",
+    "current_phase",
+    "active_artifacts",
+    "evidence_pack_ids",
+    "stale_state_flag",
+    "user_preferences"
+  ],
+  "properties": {
+    "task_id": { "type": "string", "minLength": 1 },
+    "current_goal": { "type": "string", "minLength": 1 },
+    "current_phase": { "type": "string", "minLength": 1 },
+    "active_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence_pack_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "pending_checkpoint_id": { "type": ["string", "null"] },
+    "latest_review_verdict": { "enum": ["pass", "pass_with_risks", "block", null] },
+    "user_preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["automation_mode"],
+      "properties": {
+        "automation_mode": { "enum": ["conservative", "balanced", "aggressive"] },
+        "writing_style": { "type": ["string", "null"] },
+        "review_strictness": { "type": ["string", "null"] }
+      }
+    },
+    "stale_state_flag": { "type": "boolean" }
+  }
+}

@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+pnpm-lock.yaml
+
+# Temporary files  
+.tmp-*/
+*.log
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Build/Runtime
+dist/
+build/
+coverage/
+.nyc_output/
+
+# Runtime state (don't track)
+state/
+logs/
+.paper-writer-sessions/
+
+# Secrets — contains API keys, never commit
+opencode.json
+
+# Third-party binaries (157 MB)
+third_party/
+
+# Third-party skill packages (286 MB)
+skills/
+
+# Runtime logs
+日志/
+
+# Old agent backups
+agents-backup/
+
+# Lock files (keep one, not both)
+bun.lock
+package-lock.json

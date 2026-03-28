@@ -1,0 +1,18 @@
+{
+  "name": "papermate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PaperMate: a human-in-the-loop research and paper-writing agent for OpenCode-style environments",
+  "license": "MIT",
+  "scripts": {
+    "test:paper-writer": "node --test scripts/paper-writer-*.test.js",
+    "smoke:paper-writer": "node scripts/paper-writer-runtime-smoke.js",
+    "status:bb-browser": "powershell -ExecutionPolicy Bypass -File .\\scripts\\bb-browser-status.ps1",
+    "smoke:bb-browser": "node scripts/bb-browser-runtime-smoke.js",
+    "status:chrome-devtools": "node scripts/chrome-devtools-status.js",
+    "smoke:chrome-devtools": "node scripts/chrome-devtools-runtime-smoke.js"
+  },
+  "dependencies": {
+    "@opencode-ai/plugin": "1.3.3"
+  }
+}

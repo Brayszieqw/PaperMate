@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "paper-writer/handoff-packet.schema.json",
+  "title": "paper-writer handoff packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "handoff_id",
+    "handoff_from",
+    "handoff_to",
+    "task_goal",
+    "current_phase",
+    "input_artifacts",
+    "risk_flags"
+  ],
+  "properties": {
+    "handoff_id": { "type": "string", "minLength": 1 },
+    "handoff_from": { "enum": ["paper-writer", "paper-scout", "paper-library", "paper-drafter", "paper-research-ops", "paper-reviewer"] },
+    "handoff_to": { "enum": ["paper-writer", "paper-scout", "paper-library", "paper-drafter", "paper-research-ops", "paper-reviewer"] },
+    "task_goal": { "type": "string", "minLength": 1 },
+    "current_phase": { "type": "string", "minLength": 1 },
+    "input_artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "expected_output_type": { "type": ["string", "null"] },
+    "risk_flags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "recommended_next_step": { "type": ["string", "null"] },
+    "notes_for_receiver": { "type": ["string", "null"] }
+  }
+}
