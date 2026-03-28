@@ -1,13 +1,14 @@
 /**
  * model-router.js - Task complexity scoring and model selection
  *
- * Scores workers/plans on 5 dimensions (max 15 points) and routes to appropriate model.
- * All models default to gpt-5.4 (OpenAI).
+ * Scores workers/plans on 5 dimensions (max 15 points) and routes to an
+ * appropriately sized model so low-complexity tasks do not always pay for
+ * frontier capacity.
  */
 
 const MODEL_TIERS = {
-  trivial: { score: [0, 3], model: 'gpt-5.4', label: 'trivial' },
-  simple: { score: [4, 6], model: 'gpt-5.4', label: 'simple' },
+  trivial: { score: [0, 3], model: 'gpt-5.4-mini', label: 'trivial' },
+  simple: { score: [4, 6], model: 'gpt-5.4-mini', label: 'simple' },
   medium: { score: [7, 9], model: 'gpt-5.4', label: 'medium' },
   complex: { score: [10, 12], model: 'gpt-5.4', label: 'complex' },
   hard: { score: [13, 15], model: 'gpt-5.4', label: 'hard' },

@@ -322,6 +322,32 @@ async function test(name, fn) {
     assert(deduped[0].provider_name === 'crossref', 'canonical preference should keep the journal-like record');
   });
 
+  await test('deduplicateCandidateItems keeps distinct Chinese titles separate', async () => {
+    const deduped = deduplicateCandidateItems([
+      createPaperCandidateItem({ provider_name: 'cnki', provider_record_id: 'cn:1', title: '中文论文标题一', source_type: 'journal' }),
+      createPaperCandidateItem({ provider_name: 'cnki', provider_record_id: 'cn:2', title: '中文论文标题二', source_type: 'journal' }),
+    ]);
+
+    assert(deduped.length === 2, 'different Chinese titles should not collapse into one cluster');
+  });
+
+  await test('createPaperCandidateItem preserves zero values instead of coercing them to null', async () => {
+    const item = createPaperCandidateItem({
+      provider_name: 'openalex',
+      provider_record_id: 'oa:zero',
+      title: 'Zero Citation Paper',
+      year: 0,
+      citation_count: 0,
+      reference_count: 0,
+      provider_score: 0,
+    });
+
+    assert(item.year === 0, 'year 0 should be preserved');
+    assert(item.citation_count === 0, 'citation_count 0 should be preserved');
+    assert(item.reference_count === 0, 'reference_count 0 should be preserved');
+    assert(item.provider_score === 0, 'provider_score 0 should be preserved');
+  });
+
   await test('fuseCandidateItems merges repeated hits and writes selection metadata', async () => {
     const fused = fuseCandidateItems({
       openalex: [

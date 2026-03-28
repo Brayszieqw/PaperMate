@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const { asTrimmedString, asArray, createRuntimeId } = require('./paper-writer-utils');
 
 // ── text extraction ───────────────────────────────────────────────────────────
@@ -11,7 +11,7 @@ const { asTrimmedString, asArray, createRuntimeId } = require('./paper-writer-ut
  */
 function extractTextWithPdftotext(filePath) {
   try {
-    const text = execSync(`pdftotext -layout "${filePath}" -`, {
+    const text = execFileSync('pdftotext', ['-layout', filePath, '-'], {
       encoding: 'utf8',
       timeout: 15000,
       stdio: ['ignore', 'pipe', 'ignore'],

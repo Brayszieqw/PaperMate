@@ -1,7 +1,7 @@
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
-const { saveSession, loadSession, listSessions, deleteSession } = require('./paper-writer-session-store');
+const { saveSession, loadSession, listSessions, deleteSession, validateTaskId } = require('./paper-writer-session-store');
 const { startRun, advancePaperWriterPhase, pauseRun, attachArtifactToState } = require('./paper-writer-runtime-state');
 
 const TEST_STORE_DIR = path.join(os.tmpdir(), `pw-session-store-test-${Date.now()}`);
@@ -70,6 +70,17 @@ test('saveSession throws when state has no task_id', () => {
     threw = true;
   }
   assert(threw, 'saveSession should throw when task_id is missing');
+});
+
+test('validateTaskId rejects path traversal input', () => {
+  let threw = false;
+  try {
+    validateTaskId('../escape');
+  } catch {
+    threw = true;
+  }
+
+  assert(threw, 'validateTaskId should reject traversal-like task ids');
 });
 
 test('loadSession returns the original state after save', () => {
@@ -170,6 +181,17 @@ test('deleteSession removes the file and returns true', () => {
 test('deleteSession returns false for unknown task_id', () => {
   const deleted = deleteSession('never-saved', { storeDir: TEST_STORE_DIR });
   assert(deleted === false, 'deleteSession should return false when file did not exist');
+});
+
+test('loadSession rejects invalid task ids instead of resolving arbitrary paths', () => {
+  let threw = false;
+  try {
+    loadSession('../../etc/passwd', { storeDir: TEST_STORE_DIR });
+  } catch {
+    threw = true;
+  }
+
+  assert(threw, 'loadSession should reject invalid task ids');
 });
 
 test('saveSession overwrites an existing session', () => {

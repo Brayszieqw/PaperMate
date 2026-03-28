@@ -51,7 +51,7 @@ permission:
 - 最小改动优先，尊重现有风格与边界
 - 先定位范围，再动手修改
 - 你是当前阶段的**唯一 writer**，不要与其他 agent 并行编辑同一目标
-- 优先使用 OpenCode 原生工具链完成任务
+- 优先使用当前仓库和 Claude Code 可用的原生工具链完成任务
 - 核心路径不依赖 MCP
 - 不修改无关的旧 `gpt-*` / `hive-*` 配置或说明文件
 - 不要把 planner / oracle / reviewer 的职责吞进来

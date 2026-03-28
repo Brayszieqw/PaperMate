@@ -73,14 +73,14 @@ test('scorePlan: write plan returns higher score', () => {
 });
 
 // Test routeModel
-test('routeModel: score 0 routes to gpt-5.4', () => {
+test('routeModel: score 0 routes to gpt-5.4-mini', () => {
   const model = routeModel(0);
-  assert(model === 'gpt-5.4', `expected gpt-5.4, got ${model}`);
+  assert(model === 'gpt-5.4-mini', `expected gpt-5.4-mini, got ${model}`);
 });
 
-test('routeModel: score 5 routes to gpt-5.4', () => {
+test('routeModel: score 5 routes to gpt-5.4-mini', () => {
   const model = routeModel(5);
-  assert(model === 'gpt-5.4', `expected gpt-5.4, got ${model}`);
+  assert(model === 'gpt-5.4-mini', `expected gpt-5.4-mini, got ${model}`);
 });
 
 test('routeModel: score 10 routes to gpt-5.4', () => {

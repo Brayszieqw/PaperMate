@@ -1,8 +1,10 @@
 const fs = require('fs');
 const path = require('path');
+const { createHash } = require('crypto');
 
 const DEFAULT_BROWSER_URL = process.env.CHROME_DEVTOOLS_BROWSER_URL || 'http://127.0.0.1:19825';
 const DEFAULT_BB_SITES_DIR = path.join(process.env.USERPROFILE || process.env.HOME || '', '.bb-browser', 'bb-sites');
+const ALLOW_UNTRUSTED_BB_SITES = process.env.PAPERMATE_ALLOW_UNTRUSTED_BB_SITES === '1';
 
 function getDefaultBrowserUrl() {
   return DEFAULT_BROWSER_URL;
@@ -50,13 +52,52 @@ function parseSiteMeta(adapterSource) {
   }
 }
 
-function resolveSiteAdapterPath(siteName, options = {}) {
-  const sitesDir = options.sitesDir || process.env.BB_SITES_DIR || DEFAULT_BB_SITES_DIR;
-  const segments = String(siteName || '').split('/').filter(Boolean);
+function assertSafeSiteName(siteName) {
+  const normalized = String(siteName || '').trim();
+  const segments = normalized.split('/').filter(Boolean);
   if (segments.length === 0) {
     throw new Error('resolveSiteAdapterPath requires a siteName');
   }
-  return path.join(sitesDir, ...segments) + '.js';
+
+  for (const segment of segments) {
+    if (!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(segment)) {
+      throw new Error(`invalid site adapter path segment: ${segment}`);
+    }
+  }
+
+  return segments;
+}
+
+function isSubPath(rootDir, candidatePath) {
+  const relative = path.relative(rootDir, candidatePath);
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
+function resolveSiteAdapterPath(siteName, options = {}) {
+  const sitesDir = path.resolve(options.sitesDir || process.env.BB_SITES_DIR || DEFAULT_BB_SITES_DIR);
+  const segments = assertSafeSiteName(siteName);
+  const adapterPath = path.resolve(sitesDir, ...segments) + '.js';
+
+  if (!isSubPath(sitesDir, adapterPath)) {
+    throw new Error(`site adapter path escapes sitesDir: ${siteName}`);
+  }
+
+  return adapterPath;
+}
+
+function hashAdapterSource(source) {
+  return createHash('sha256').update(String(source || ''), 'utf8').digest('hex');
+}
+
+function ensureTrustedAdapterExecution(adapter, options = {}) {
+  if (options.allowUntrustedAdapters === true || ALLOW_UNTRUSTED_BB_SITES) {
+    return;
+  }
+
+  throw new Error(
+    `Refusing to execute local bb-sites adapter without explicit opt-in: ${adapter.adapterPath}. `
+      + 'Set PAPERMATE_ALLOW_UNTRUSTED_BB_SITES=1 or pass allowUntrustedAdapters: true.'
+  );
 }
 
 function loadSiteAdapter(siteName, options = {}) {
@@ -65,13 +106,21 @@ function loadSiteAdapter(siteName, options = {}) {
     throw new Error(`Site adapter not found: ${adapterPath}`);
   }
 
+  const resolvedSitesDir = path.resolve(options.sitesDir || process.env.BB_SITES_DIR || DEFAULT_BB_SITES_DIR);
+  const realAdapterPath = fs.realpathSync(adapterPath);
+  if (!isSubPath(resolvedSitesDir, realAdapterPath)) {
+    throw new Error(`Resolved site adapter escapes trusted sitesDir: ${realAdapterPath}`);
+  }
+
   const source = fs.readFileSync(adapterPath, 'utf8');
   const meta = parseSiteMeta(source) || {};
   const body = source.replace(/\/\*\s*@meta[\s\S]*?\*\//, '').trim();
 
   return {
     adapterPath,
+    realAdapterPath,
     source,
+    sourceHash: hashAdapterSource(source),
     meta,
     body,
   };
@@ -177,12 +226,13 @@ async function evaluateOnPage(pageWsUrl, expression) {
   return result.result ? result.result.value : null;
 }
 
-async function runChromeSiteAdapter({ siteName, args = {}, browserUrl = DEFAULT_BROWSER_URL, sitesDir, runner } = {}) {
+async function runChromeSiteAdapter({ siteName, args = {}, browserUrl = DEFAULT_BROWSER_URL, sitesDir, runner, allowUntrustedAdapters } = {}) {
   if (typeof runner === 'function') {
     return runner({ siteName, args, browserUrl, sitesDir });
   }
 
   const adapter = loadSiteAdapter(siteName, { sitesDir });
+  ensureTrustedAdapterExecution(adapter, { allowUntrustedAdapters });
   const domain = adapter.meta?.domain;
   if (!domain) {
     throw new Error(`Adapter ${siteName} is missing a domain declaration`);
@@ -222,6 +272,7 @@ async function searchArxivWithChromeDevtools(options = {}) {
       browserUrl: options.browserUrl,
       sitesDir: options.sitesDir,
       runner: options.runner,
+      allowUntrustedAdapters: options.allowUntrustedAdapters,
     });
 
     if (payload && Array.isArray(payload.papers) && payload.papers.length > 0) {
@@ -239,6 +290,7 @@ async function searchArxivWithChromeDevtools(options = {}) {
     browserUrl: options.browserUrl,
     sitesDir: options.sitesDir,
     runner: options.runner,
+    allowUntrustedAdapters: options.allowUntrustedAdapters,
   });
 
   const papers = (googlePayload.results || []).map((item) => {
@@ -275,6 +327,7 @@ async function searchGoogleWithChromeDevtools(options = {}) {
     browserUrl: options.browserUrl,
     sitesDir: options.sitesDir,
     runner: options.runner,
+    allowUntrustedAdapters: options.allowUntrustedAdapters,
   });
 }
 
@@ -288,6 +341,7 @@ async function searchStackOverflowWithChromeDevtools(options = {}) {
     browserUrl: options.browserUrl,
     sitesDir: options.sitesDir,
     runner: options.runner,
+    allowUntrustedAdapters: options.allowUntrustedAdapters,
   });
 }
 
@@ -300,6 +354,7 @@ async function getWikipediaSummaryWithChromeDevtools(options = {}) {
     browserUrl: options.browserUrl,
     sitesDir: options.sitesDir,
     runner: options.runner,
+    allowUntrustedAdapters: options.allowUntrustedAdapters,
   });
 }
 

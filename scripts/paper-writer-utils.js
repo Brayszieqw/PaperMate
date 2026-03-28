@@ -1,4 +1,4 @@
-let runtimeIdCounter = 0;
+const { randomUUID } = require('crypto');
 
 function asTrimmedString(value, fallback = '') {
   const text = typeof value === 'string' ? value.trim() : '';
@@ -11,8 +11,8 @@ function asArray(value) {
 }
 
 function createRuntimeId(prefix = 'pw') {
-  runtimeIdCounter += 1;
-  return `${prefix}-${Date.now()}-${runtimeIdCounter}`;
+  const normalizedPrefix = typeof prefix === 'string' && prefix.trim() ? prefix.trim() : 'pw';
+  return `${normalizedPrefix}-${randomUUID()}`;
 }
 
 module.exports = {

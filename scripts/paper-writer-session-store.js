@@ -1,19 +1,41 @@
 const fs = require('fs');
 const path = require('path');
+const { randomUUID } = require('crypto');
 
 const DEFAULT_STORE_DIR = path.join(__dirname, '..', '.paper-writer-sessions');
+const TASK_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 
 function resolveStoreDir(options = {}) {
-  return options.storeDir || DEFAULT_STORE_DIR;
+  return path.resolve(options.storeDir || DEFAULT_STORE_DIR);
+}
+
+function validateTaskId(taskId) {
+  const normalized = typeof taskId === 'string' ? taskId.trim() : '';
+  if (!normalized) {
+    throw new Error('taskId is required');
+  }
+  if (!TASK_ID_PATTERN.test(normalized)) {
+    throw new Error(`invalid taskId: ${taskId}`);
+  }
+  return normalized;
 }
 
 function sessionFilePath(storeDir, taskId) {
-  return path.join(storeDir, `${taskId}.json`);
+  const safeTaskId = validateTaskId(taskId);
+  const normalizedStoreDir = resolveStoreDir({ storeDir });
+  const filePath = path.resolve(normalizedStoreDir, `${safeTaskId}.json`);
+  const relative = path.relative(normalizedStoreDir, filePath);
+
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error(`resolved session path escapes store dir: ${safeTaskId}`);
+  }
+
+  return filePath;
 }
 
 function ensureStoreDir(storeDir) {
   if (!fs.existsSync(storeDir)) {
-    fs.mkdirSync(storeDir, { recursive: true });
+    fs.mkdirSync(storeDir, { recursive: true, mode: 0o700 });
   }
 }
 
@@ -25,7 +47,7 @@ function saveSession(state, options = {}) {
   const storeDir = resolveStoreDir(options);
   ensureStoreDir(storeDir);
 
-  const taskId = state.task_id;
+  const taskId = validateTaskId(state.task_id);
   if (!taskId) {
     throw new Error('saveSession: state.task_id is required');
   }
@@ -38,7 +60,16 @@ function saveSession(state, options = {}) {
     state,
   };
 
-  fs.writeFileSync(filePath, JSON.stringify(record, null, 2), 'utf8');
+  const tempPath = path.join(storeDir, `.${taskId}.${process.pid}.${randomUUID()}.tmp`);
+  try {
+    fs.writeFileSync(tempPath, JSON.stringify(record, null, 2), { encoding: 'utf8', mode: 0o600 });
+    fs.renameSync(tempPath, filePath);
+  } finally {
+    if (fs.existsSync(tempPath)) {
+      fs.unlinkSync(tempPath);
+    }
+  }
+
   return { task_id: taskId, file_path: filePath, saved_at: record.saved_at };
 }
 
@@ -110,6 +141,7 @@ function deleteSession(taskId, options = {}) {
 
 module.exports = {
   DEFAULT_STORE_DIR,
+  validateTaskId,
   saveSession,
   loadSession,
   listSessions,

@@ -80,7 +80,7 @@ This makes PaperMate a better fit for students who need support and structure, b
 - The search layer is the most mature part of the system
 - End-to-end LLM drafting is not fully wired into the runtime yet
 - Chinese thesis templates, school-specific rules, and citation formats are not standardized yet
-- Browser-backed retrieval requires local Chrome DevTools setup
+- Browser-backed retrieval requires local Chrome DevTools setup and explicit opt-in for local `bb-sites` adapters
 
 ## Quick start
 
@@ -104,7 +104,13 @@ console.log(result.ui.guidance);
 console.log(result.runtime.searchArtifact.items.length, 'candidates found');
 ```
 
-For browser-backed arXiv retrieval, start Chrome with remote debugging enabled, then:
+For browser-backed arXiv retrieval, start Chrome with remote debugging enabled. If you want to execute local `bb-sites` adapters, explicitly opt in first:
+
+```bash
+PAPERMATE_ALLOW_UNTRUSTED_BB_SITES=1
+```
+
+Then run:
 
 ```js
 const result = await runPaperWriterEntry({

@@ -1,10 +1,7 @@
+const { asArray } = require('./paper-writer-utils');
+
 const DEFAULT_MIN_READ_WORKERS = 2;
 const DEFAULT_MAX_READ_WORKERS = 4;
-
-function asArray(value) {
-  if (value == null) return [];
-  return Array.isArray(value) ? value : [value];
-}
 
 function dedupePush(target, items) {
   for (const item of asArray(items)) {

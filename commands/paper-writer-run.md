@@ -28,7 +28,7 @@ description: 启动或继续 paper-writer 论文任务（new / resume / pdf_ops 
 echo '<JSON>' | node ./scripts/paper-writer-host.js
 ```
 
-以上命令默认在 OpenCode 仓库根目录执行；不要把个人机器上的绝对路径写进公开文档。
+以上命令默认在仓库根目录执行（例如 Claude Code 工作区根目录）；不要把个人机器上的绝对路径写进公开文档。
 
 ## 解析输出并回复用户
 

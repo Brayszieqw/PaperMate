@@ -45,15 +45,15 @@ function createPaperCandidateItem(seed = {}) {
     provider_record_id: asTrimmedString(seed.provider_record_id, 'unknown_record'),
     title: asTrimmedString(seed.title, '[untitled paper]'),
     authors: asArray(seed.authors),
-    year: seed.year || null,
-    venue: seed.venue || null,
-    abstract_or_summary: seed.abstract_or_summary || null,
-    doi: seed.doi || null,
-    url: seed.url || null,
-    citation_count: seed.citation_count || null,
-    reference_count: seed.reference_count || null,
-    source_type: seed.source_type || null,
-    provider_score: seed.provider_score || null,
+    year: seed.year ?? null,
+    venue: seed.venue ?? null,
+    abstract_or_summary: seed.abstract_or_summary ?? null,
+    doi: seed.doi ?? null,
+    url: seed.url ?? null,
+    citation_count: seed.citation_count ?? null,
+    reference_count: seed.reference_count ?? null,
+    source_type: seed.source_type ?? null,
+    provider_score: seed.provider_score ?? null,
     selection_reason: seed.selection_reason || null,
     alternative_rejection_reason: seed.alternative_rejection_reason || null,
     claim_support_scope: seed.claim_support_scope || null,
@@ -76,6 +76,9 @@ function createSearchArtifact(seed = {}) {
       query_variants: asArray(seed.trace?.query_variants),
       providers_used: asArray(seed.trace?.providers_used),
       notes: seed.trace?.notes || null,
+      variant_runs: asArray(seed.trace?.variant_runs),
+      seed_expansion: asArray(seed.trace?.seed_expansion),
+      errors: asArray(seed.trace?.errors),
     },
   };
 }
@@ -199,15 +202,15 @@ function mapOpenAlexResultToCandidate(result = {}) {
     provider_record_id: result.id || createRuntimeId('openalex-record'),
     title: result.display_name,
     authors: asArray(result.authorships).map((authorship) => authorship?.author?.display_name).filter(Boolean),
-    year: result.publication_year || null,
-    venue: result.primary_location?.source?.display_name || null,
+    year: result.publication_year ?? null,
+    venue: result.primary_location?.source?.display_name ?? null,
     abstract_or_summary: flattenOpenAlexAbstract(result.abstract_inverted_index),
     doi: typeof result.doi === 'string' ? result.doi.replace(/^https?:\/\/doi\.org\//i, '') : null,
-    url: result.id || null,
-    citation_count: result.cited_by_count || null,
-    reference_count: result.referenced_works_count || null,
+    url: result.id ?? null,
+    citation_count: result.cited_by_count ?? null,
+    reference_count: result.referenced_works_count ?? null,
     source_type: 'openalex',
-    provider_score: result.relevance_score || null,
+    provider_score: result.relevance_score ?? null,
   });
 }
 
@@ -221,13 +224,13 @@ function mapOpenAlexExpandedResultToCandidate(result = {}, context = {}) {
     provider_record_id: result.id || createRuntimeId('openalex-expansion-record'),
     title: result.display_name,
     authors: asArray(result.authorships).map((authorship) => authorship?.author?.display_name).filter(Boolean),
-    year: result.publication_year || null,
-    venue: result.primary_location?.source?.display_name || null,
+    year: result.publication_year ?? null,
+    venue: result.primary_location?.source?.display_name ?? null,
     abstract_or_summary: flattenOpenAlexAbstract(result.abstract_inverted_index),
     doi: typeof result.doi === 'string' ? result.doi.replace(/^https?:\/\/doi\.org\//i, '') : null,
-    url: result.id || null,
-    citation_count: result.cited_by_count || null,
-    reference_count: result.referenced_works_count || null,
+    url: result.id ?? null,
+    citation_count: result.cited_by_count ?? null,
+    reference_count: result.referenced_works_count ?? null,
     source_type: result.type || 'openalex',
     provider_score: null,
     selection_reason: relationType === 'related_work'
@@ -250,11 +253,11 @@ function mapCrossrefResultToCandidate(result = {}) {
     provider_record_id: result.DOI || createRuntimeId('crossref-record'),
     title: asArray(result.title)[0] || '[untitled paper]',
     authors: asArray(result.author).map((author) => [author?.given, author?.family].filter(Boolean).join(' ')).filter(Boolean),
-    year: result.published?.['date-parts']?.[0]?.[0] || null,
-    venue: asArray(result['container-title'])[0] || null,
-    doi: result.DOI || null,
-    url: result.URL || null,
-    citation_count: result['is-referenced-by-count'] || null,
+    year: result.published?.['date-parts']?.[0]?.[0] ?? null,
+    venue: asArray(result['container-title'])[0] ?? null,
+    doi: result.DOI ?? null,
+    url: result.URL ?? null,
+    citation_count: result['is-referenced-by-count'] ?? null,
     source_type: asArray(result['container-title']).length > 0 ? 'journal' : 'crossref',
     provider_score: null,
   });
@@ -268,8 +271,8 @@ function mapChromeCdpArxivPaperToCandidate(result = {}) {
     authors: asArray(result.authors),
     year: typeof result.published === 'string' ? Number(String(result.published).slice(0, 4)) || null : null,
     venue: 'arXiv',
-    abstract_or_summary: result.abstract || null,
-    url: result.url || null,
+    abstract_or_summary: result.abstract ?? null,
+    url: result.url ?? null,
     source_type: 'preprint',
     provider_score: null,
     selection_reason: 'chrome devtools browser-backed arXiv adapter result',
@@ -327,6 +330,45 @@ function createSearchRunEntry(item, providerName, queryVariant, rank) {
   };
 }
 
+function toErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
+async function runProviderQueryVariant({
+  providerName,
+  queryVariant,
+  fetchImpl,
+  chromeRunner,
+  browserUrl,
+  sitesDir,
+} = {}) {
+  if (providerName === 'chrome_cdp_arxiv') {
+    const payload = await searchArxivWithChromeDevtools({
+      query: queryVariant,
+      count: 10,
+      runner: chromeRunner,
+      browserUrl,
+      sitesDir,
+    });
+
+    return asArray(payload.papers).map((item, index) =>
+      createSearchRunEntry(mapChromeCdpArxivPaperToCandidate(item), providerName, queryVariant, index + 1)
+    );
+  }
+
+  if (providerName === 'openalex') {
+    const mapped = await searchOpenAlex({ query: queryVariant, count: 10, fetchImpl });
+    return mapped.map((item, index) => createSearchRunEntry(item, providerName, queryVariant, index + 1));
+  }
+
+  if (providerName === 'crossref') {
+    const mapped = await searchCrossref({ query: queryVariant, count: 10, fetchImpl });
+    return mapped.map((item, index) => createSearchRunEntry(item, providerName, queryVariant, index + 1));
+  }
+
+  return [];
+}
+
 async function searchWithRealProviders({
   query,
   queryVariants,
@@ -343,6 +385,7 @@ async function searchWithRealProviders({
   const effectiveVariants = Array.isArray(queryVariants) && queryVariants.length > 0
     ? queryVariants
     : buildQueryVariants(query);
+  const tasks = [];
 
   for (const providerName of providers) {
     if (!registry[providerName] || registry[providerName].enabled !== true) {
@@ -350,51 +393,43 @@ async function searchWithRealProviders({
       continue;
     }
 
-    const providerItems = [];
+    results[providerName] = [];
 
     for (const queryVariant of effectiveVariants) {
-      try {
-        if (providerName === 'chrome_cdp_arxiv') {
-          const payload = await searchArxivWithChromeDevtools({
-            query: queryVariant,
-            count: 10,
-            runner: chromeRunner,
+      tasks.push((async () => {
+        try {
+          const items = await runProviderQueryVariant({
+            providerName,
+            queryVariant,
+            fetchImpl,
+            chromeRunner,
             browserUrl,
             sitesDir,
           });
-          const mapped = asArray(payload.papers).map(mapChromeCdpArxivPaperToCandidate);
-          providerItems.push(...mapped.map((item, index) => createSearchRunEntry(item, providerName, queryVariant, index + 1)));
-          variantRuns.push({ provider: providerName, query_variant: queryVariant, count: mapped.length });
-          continue;
+          return { providerName, queryVariant, items };
+        } catch (error) {
+          return { providerName, queryVariant, items: [], error: toErrorMessage(error) };
         }
+      })());
+    }
+  }
 
-        if (providerName === 'openalex') {
-          const mapped = await searchOpenAlex({ query: queryVariant, count: 10, fetchImpl });
-          providerItems.push(...mapped.map((item, index) => createSearchRunEntry(item, providerName, queryVariant, index + 1)));
-          variantRuns.push({ provider: providerName, query_variant: queryVariant, count: mapped.length });
-          continue;
-        }
+  const taskResults = await Promise.all(tasks);
 
-        if (providerName === 'crossref') {
-          const mapped = await searchCrossref({ query: queryVariant, count: 10, fetchImpl });
-          providerItems.push(...mapped.map((item, index) => createSearchRunEntry(item, providerName, queryVariant, index + 1)));
-          variantRuns.push({ provider: providerName, query_variant: queryVariant, count: mapped.length });
-          continue;
-        }
-
-        variantRuns.push({ provider: providerName, query_variant: queryVariant, count: 0 });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        providerErrors.push({
-          provider: providerName,
-          query_variant: queryVariant,
-          error: message,
-        });
-        variantRuns.push({ provider: providerName, query_variant: queryVariant, count: 0, error: message });
-      }
+  for (const taskResult of taskResults) {
+    const { providerName, queryVariant, items, error } = taskResult;
+    if (error) {
+      providerErrors.push({
+        provider: providerName,
+        query_variant: queryVariant,
+        error,
+      });
+      variantRuns.push({ provider: providerName, query_variant: queryVariant, count: 0, error });
+      continue;
     }
 
-    results[providerName] = providerItems;
+    results[providerName].push(...items);
+    variantRuns.push({ provider: providerName, query_variant: queryVariant, count: items.length });
   }
 
   Object.defineProperty(results, '__providerErrors', {
@@ -422,7 +457,7 @@ function fuseRealSearchResults(resultMap = {}) {
 function normalizeTitle(title) {
   return asTrimmedString(title, '')
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -440,7 +475,8 @@ function deduplicateCandidateItems(items = []) {
 
   for (const item of items) {
     const doiKey = item.doi ? `doi:${String(item.doi).toLowerCase()}` : null;
-    const titleKey = doiKey ? null : `title:${normalizeTitle(item.title)}`;
+    const normalizedTitle = doiKey ? '' : normalizeTitle(item.title);
+    const titleKey = normalizedTitle ? `title:${normalizedTitle}` : null;
     const key = doiKey || titleKey || `${item.provider_name}:${item.provider_record_id}`;
     const existing = byKey.get(key);
 
@@ -529,7 +565,7 @@ function fuseCandidateItems(resultMap = {}, userQuery = '') {
     const rankScore = 1 / (60 + retrievalRank);
     const providerBonus = getProviderConfidenceBonus(providerName);
     const sourceBonus = getSourceConfidenceBonus(item.source_type);
-    const citationBonus = Math.min(Math.log1p(item.citation_count || 0) / 20, 0.25);
+    const citationBonus = Math.min(Math.log1p(item.citation_count ?? 0) / 20, 0.25);
     const match = computeQueryMatchScore(item, queryTerms);
     const matchBonus = match.score * 0.3;
     const occurrenceScore = rankScore + providerBonus + sourceBonus + citationBonus + matchBonus;
@@ -569,9 +605,9 @@ function fuseCandidateItems(resultMap = {}, userQuery = '') {
     best._query_variants = queryVariants;
     return best;
   }).sort((left, right) => {
-    const scoreDiff = (right.provider_score || 0) - (left.provider_score || 0);
+    const scoreDiff = (right.provider_score ?? 0) - (left.provider_score ?? 0);
     if (scoreDiff !== 0) return scoreDiff;
-    return (right.citation_count || 0) - (left.citation_count || 0);
+    return (right.citation_count ?? 0) - (left.citation_count ?? 0);
   });
 }
 
@@ -579,7 +615,7 @@ function pickSeedOpenAlexCandidates(resultMap = {}, maxSeedWorks = 2) {
   return asArray(resultMap.openalex)
     .slice()
     .sort((left, right) => {
-      const citationDiff = (right.citation_count || 0) - (left.citation_count || 0);
+      const citationDiff = (right.citation_count ?? 0) - (left.citation_count ?? 0);
       if (citationDiff !== 0) return citationDiff;
       return (right._retrieval_rank || 0) - (left._retrieval_rank || 0);
     })
@@ -607,65 +643,80 @@ async function expandSeedWorks({
 
   const expandedItems = [];
   const expansionTrace = [];
+  const expansionErrors = [];
+  const scheduledIds = new Set();
 
-  for (const seed of seeds) {
-    try {
-      const work = await fetchOpenAlexWorkById({ workId: seed.provider_record_id, fetchImpl });
-      const relatedIds = asArray(work.related_works).slice(0, maxRelatedPerSeed);
-      const referencedIds = asArray(work.referenced_works).slice(0, maxReferencesPerSeed);
+  const seedLookups = await Promise.allSettled(
+    seeds.map((seed) =>
+      fetchOpenAlexWorkById({ workId: seed.provider_record_id, fetchImpl }).then((work) => ({ seed, work }))
+    )
+  );
 
-      for (const relatedId of relatedIds) {
-        if (seenIds.has(relatedId)) continue;
-        try {
-          const relatedWork = await fetchOpenAlexWorkById({ workId: relatedId, fetchImpl });
-          const candidate = mapOpenAlexExpandedResultToCandidate(relatedWork, {
-            relation_type: 'related_work',
-            seed_title: seed.title,
-            provider_name: 'openalex_expansion',
-          });
-          candidate._provider_name = 'openalex_expansion';
-          candidate._query_variant = seed.title;
-          candidate._retrieval_rank = expandedItems.length + 1;
-          expandedItems.push(candidate);
-          seenIds.add(relatedId);
-          expansionTrace.push({
-            seed_title: seed.title,
-            relation_type: 'related_work',
-            expanded_work_id: relatedId,
-          });
-        } catch {
-        }
-      }
+  const expansionTasks = [];
 
-      for (const referencedId of referencedIds) {
-        if (seenIds.has(referencedId)) continue;
-        try {
-          const referencedWork = await fetchOpenAlexWorkById({ workId: referencedId, fetchImpl });
-          const candidate = mapOpenAlexExpandedResultToCandidate(referencedWork, {
-            relation_type: 'referenced_work',
-            seed_title: seed.title,
-            provider_name: 'openalex_expansion',
-          });
-          candidate._provider_name = 'openalex_expansion';
-          candidate._query_variant = seed.title;
-          candidate._retrieval_rank = expandedItems.length + 1;
-          expandedItems.push(candidate);
-          seenIds.add(referencedId);
-          expansionTrace.push({
-            seed_title: seed.title,
-            relation_type: 'referenced_work',
-            expanded_work_id: referencedId,
-          });
-        } catch {
-        }
-      }
-    } catch {
+  for (const seedLookup of seedLookups) {
+    if (seedLookup.status !== 'fulfilled') {
+      expansionErrors.push(toErrorMessage(seedLookup.reason));
+      continue;
     }
+
+    const { seed, work } = seedLookup.value;
+    const relatedIds = asArray(work.related_works).slice(0, maxRelatedPerSeed);
+    const referencedIds = asArray(work.referenced_works).slice(0, maxReferencesPerSeed);
+
+    for (const relatedId of relatedIds) {
+      if (seenIds.has(relatedId) || scheduledIds.has(relatedId)) continue;
+      scheduledIds.add(relatedId);
+      expansionTasks.push({
+        workId: relatedId,
+        relation_type: 'related_work',
+        seed_title: seed.title,
+        provider_name: 'openalex_expansion',
+      });
+    }
+
+    for (const referencedId of referencedIds) {
+      if (seenIds.has(referencedId) || scheduledIds.has(referencedId)) continue;
+      scheduledIds.add(referencedId);
+      expansionTasks.push({
+        workId: referencedId,
+        relation_type: 'referenced_work',
+        seed_title: seed.title,
+        provider_name: 'openalex_expansion',
+      });
+    }
+  }
+
+  const expansionLookups = await Promise.allSettled(
+    expansionTasks.map((task) =>
+      fetchOpenAlexWorkById({ workId: task.workId, fetchImpl }).then((work) => ({ task, work }))
+    )
+  );
+
+  for (const expansionLookup of expansionLookups) {
+    if (expansionLookup.status !== 'fulfilled') {
+      expansionErrors.push(toErrorMessage(expansionLookup.reason));
+      continue;
+    }
+
+    const { task, work } = expansionLookup.value;
+    const candidate = mapOpenAlexExpandedResultToCandidate(work, task);
+    candidate._provider_name = task.provider_name;
+    candidate._query_variant = task.seed_title;
+    candidate._retrieval_rank = expandedItems.length + 1;
+    expandedItems.push(candidate);
+    seenIds.add(task.workId);
+    expansionTrace.push({
+      seed_title: task.seed_title,
+      relation_type: task.relation_type,
+      expanded_work_id: task.workId,
+    });
   }
 
   return {
     items: expandedItems,
     trace: expansionTrace,
+    errors: expansionErrors,
   };
 }
 
@@ -705,6 +756,10 @@ async function buildRealCandidateSet({ query, providers, fetchImpl, chromeRunner
     traceNotes.push(`provider warnings: ${providerErrors.map((item) => `${item.provider}: ${item.error}`).join(' | ')}`);
   }
 
+  if (seedExpansion.errors && seedExpansion.errors.length > 0) {
+    traceNotes.push(`seed expansion warnings: ${seedExpansion.errors.join(' | ')}`);
+  }
+
   return createSearchArtifact({
     artifact_id: createRuntimeId('real-search-candidate-set'),
     artifact_type: 'literature_candidate_set',
@@ -716,6 +771,7 @@ async function buildRealCandidateSet({ query, providers, fetchImpl, chromeRunner
       notes: traceNotes.join('; '),
       variant_runs: asArray(results.__variantRuns),
       seed_expansion: seedExpansion.trace,
+      errors: [...providerErrors.map((item) => `${item.provider}/${item.query_variant}: ${item.error}`), ...asArray(seedExpansion.errors)],
     },
   });
 }
