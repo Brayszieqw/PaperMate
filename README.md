@@ -1,127 +1,124 @@
 # PaperMate
 
-`PaperMate` is a human-in-the-loop research and paper-writing agent built inside an OpenCode-style workspace.
+A human-in-the-loop research and paper-writing agent.
 
-It is designed for real paper-writing workflows rather than fully autonomous "idea to paper" automation. The current focus is:
+PaperMate helps you research and write academic papers — with you, not instead of you. It scouts literature, organizes notes, drafts sections, checks evidence, and prepares you for thesis defense, while pausing at every high-stakes decision for your approval.
 
-- topic framing
-- literature scouting
-- note organization
-- drafting
-- claim/evidence review
-- defense preparation
-- revision tracking
+> **Status: Early experimental.** Core runtime and search layer are stable. End-to-end LLM execution is in progress. Feedback welcome.
 
-## Positioning
+---
 
-This project is best understood as a control layer for research and paper work:
+## What it does
 
-- one visible orchestrator
-- artifact-first workflow
-- checkpoint-aware editing and review
-- evidence-first search and writing
+| Stage | What PaperMate does |
+|-------|---------------------|
+| Topic framing | Helps narrow and clarify your research question |
+| Literature scouting | Multi-source search (OpenAlex, Crossref, arXiv) with fusion and reranking |
+| Note organization | Structures candidate papers into annotated, defense-ready notes |
+| Drafting | Outlines and drafts sections based on collected evidence |
+| Claim review | Flags unsupported claims and weak evidence links |
+| Defense prep | Anticipates advisor questions and prepares reasoned answers |
+| Revision tracking | Tracks what has changed, what is pending, and what still needs evidence |
 
-It is especially suitable for thesis-style and paper-writing workflows where the user wants an agent that can research and write with them, without silently taking over high-risk decisions.
+---
 
-## Current search layer
+## Why PaperMate
 
-The search layer currently includes:
+Most paper-writing agents try to do everything automatically. PaperMate takes a different approach:
 
-- multi-query rewrite
-- multi-source recall
-- fusion and reranking
-- seed-paper expansion via OpenAlex related/reference graph
-- browser-backed search path through Chrome DevTools
-- structured selection reasons and defense-ready notes
+- **Checkpoint-first**: pauses before overwriting anything or making irreversible decisions
+- **Evidence-first**: every claim traces back to a source you approved
+- **Transparent routing**: you see which stage is active and why
+- **Defense-ready notes**: every selected paper comes with a rationale you can explain to your advisor
 
-## Codex and Claude Code
+---
 
-PaperMate is named to work well across:
+## Search layer
 
-- OpenCode
-- Codex
-- Claude Code
+The search layer is the most mature part of PaperMate:
 
-The public name is `PaperMate`.
-The internal orchestrator/runtime path remains `paper-writer`.
+- Multi-query rewrite (up to 5 variants per goal)
+- Multi-source recall: OpenAlex + Crossref + arXiv (via Chrome DevTools)
+- Reciprocal rank fusion with citation-count and query-match scoring
+- Seed-paper expansion via OpenAlex related/reference graph
+- DOI-level deduplication with canonical preference (journal > conference > preprint)
+- Structured `selection_reason` and `defense_notes` for every candidate
 
-For Codex-specific setup, see:
-
-- [docs/codex-papermate.md](docs/codex-papermate.md)
-- [agents/paper-writer/PAPERMATE-CODEX-PROMPT.md](agents/paper-writer/PAPERMATE-CODEX-PROMPT.md)
-
-## Repository layout
-
-- [agents/paper-writer](agents/paper-writer)
-- [commands](commands)
-- [scripts](scripts)
-- [docs/paper-writer](docs/paper-writer)
+---
 
 ## Quick start
 
-Run tests:
-
 ```bash
-npm run test:paper-writer
+npm install
+npm test
 ```
 
-Run the smoke scenario:
+Run the smoke scenario (no external APIs needed):
 
 ```bash
 npm run smoke:paper-writer
 ```
 
-Browser-backed status:
+Try with real search (requires internet):
 
-```bash
-npm run status:chrome-devtools
+```js
+const { runPaperWriterEntry } = require('./scripts/paper-writer-entry');
+
+const result = await runPaperWriterEntry({
+  goal: 'survey retrieval-augmented generation for biomedical QA',
+  searchMode: 'real',
+});
+
+console.log(result.ui.guidance);
+console.log(result.runtime.searchArtifact.items.length, 'candidates found');
 ```
 
-Browser-backed smoke:
+With browser-backed arXiv retrieval (requires Chrome with remote debugging):
 
-```bash
-npm run smoke:chrome-devtools
+```js
+const result = await runPaperWriterEntry({
+  goal: 'survey retrieval-augmented generation for biomedical QA',
+  searchMode: 'browser',
+  browserUrl: 'http://127.0.0.1:9222',
+});
 ```
 
-## Usage example
+---
 
-```json
-{
-  "mode": "new",
-  "goal": "先筛论文，再起草 related work",
-  "searchMode": "real"
-}
+## Repository layout
+
+```
+PaperMate/
+├── agents/
+│   ├── paper-writer/       # Core agent definition and prompts
+│   └── papermate-*.md      # Supporting agent roles
+├── commands/               # Slash command entry points
+├── scripts/
+│   ├── paper-writer-*.js   # Runtime, search, session, host
+│   ├── chrome-devtools-*.js # Browser-backed search adapter
+│   ├── bb-browser-*.js     # Alternative browser adapter
+│   └── swarm-runtime*.js   # Multi-agent orchestration layer
+├── docs/
+│   ├── paper-writer/       # Design docs and runtime contracts
+│   └── codex-papermate.md  # Codex/Claude Code integration guide
+└── plugins/                # Audit plugin
 ```
 
-For browser-backed retrieval:
+---
 
-```json
-{
-  "mode": "new",
-  "goal": "先筛论文，再起草 related work",
-  "searchMode": "browser",
-  "browserUrl": "http://127.0.0.1:19825"
-}
-```
+## Requirements
 
-## Status
+- Node.js 18+
+- For real search: internet access (OpenAlex and Crossref are free, no API key needed)
+- For browser search: Chrome with `--remote-debugging-port=9222`
 
-PaperMate is ready for an early public release.
+---
 
-What is stable now:
+## Roadmap
 
-- orchestrator/runtime skeleton
-- session lifecycle
-- paper workflow routing
-- search-layer core logic
-- tests for the current `paper-writer` runtime path
+See [ROADMAP.md](ROADMAP.md).
 
-What is still evolving:
-
-- browser-backed retrieval quality
-- post-filtering of broad search results
-- citation/reference expansion depth
-- top-level product polish
+---
 
 ## License
 
