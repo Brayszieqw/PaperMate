@@ -1,0 +1,10 @@
+{
+  "name": "papermate",
+  "version": "0.1.0",
+  "description": "Human-in-the-loop thesis writing copilot for Chinese university students. Search literature, organize evidence, draft sections, and prepare for defense — with you, not instead of you.",
+  "author": {
+    "name": "ljx"
+  },
+  "license": "MIT",
+  "keywords": ["thesis", "research", "paper-writing", "literature-search", "academic", "chinese-students"]
+}
