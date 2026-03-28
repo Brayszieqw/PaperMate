@@ -1,17 +1,19 @@
 /**
- * model-router.js - Task complexity scoring and model selection
+ * model-router.js - Task complexity scoring and tier classification
  *
- * Scores workers/plans on 5 dimensions (max 15 points) and routes to an
- * appropriately sized model so low-complexity tasks do not always pay for
- * frontier capacity.
+ * Scores workers/plans on 5 dimensions (max 15 points) and returns
+ * a tier label (trivial / simple / medium / complex / hard).
+ *
+ * Model selection is intentionally NOT done here. Use the tier label
+ * together with your own model config or llm-client.js detectBackend().
  */
 
-const MODEL_TIERS = {
-  trivial: { score: [0, 3], model: 'gpt-5.4-mini', label: 'trivial' },
-  simple: { score: [4, 6], model: 'gpt-5.4-mini', label: 'simple' },
-  medium: { score: [7, 9], model: 'gpt-5.4', label: 'medium' },
-  complex: { score: [10, 12], model: 'gpt-5.4', label: 'complex' },
-  hard: { score: [13, 15], model: 'gpt-5.4', label: 'hard' },
+const TIERS = {
+  trivial: { score: [0, 3], label: 'trivial' },
+  simple:  { score: [4, 6], label: 'simple' },
+  medium:  { score: [7, 9], label: 'medium' },
+  complex: { score: [10, 12], label: 'complex' },
+  hard:    { score: [13, 15], label: 'hard' },
 };
 
 /**
@@ -98,32 +100,34 @@ function scorePlan(plan) {
 }
 
 /**
- * Route to appropriate model based on complexity score
- * Returns model identifier string
+ * Route to tier label based on complexity score.
+ * Returns: 'trivial' | 'simple' | 'medium' | 'complex' | 'hard'
  */
+function routeTier(score) {
+  if (score <= 3) return 'trivial';
+  if (score <= 6) return 'simple';
+  if (score <= 9) return 'medium';
+  if (score <= 12) return 'complex';
+  return 'hard';
+}
+
+/** @deprecated use routeTier — this function no longer selects models */
 function routeModel(score) {
-  if (score <= 3) return MODEL_TIERS.trivial.model;
-  if (score <= 6) return MODEL_TIERS.simple.model;
-  if (score <= 9) return MODEL_TIERS.medium.model;
-  if (score <= 12) return MODEL_TIERS.complex.model;
-  return MODEL_TIERS.hard.model;
+  return routeTier(score);
 }
 
 /**
  * Get tier label for a score
  */
 function getTierLabel(score) {
-  if (score <= 3) return MODEL_TIERS.trivial.label;
-  if (score <= 6) return MODEL_TIERS.simple.label;
-  if (score <= 9) return MODEL_TIERS.medium.label;
-  if (score <= 12) return MODEL_TIERS.complex.label;
-  return MODEL_TIERS.hard.label;
+  return routeTier(score);
 }
 
 module.exports = {
   scoreWorker,
   scorePlan,
+  routeTier,
   routeModel,
   getTierLabel,
-  MODEL_TIERS,
+  TIERS,
 };

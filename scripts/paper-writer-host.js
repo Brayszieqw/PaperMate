@@ -1,7 +1,19 @@
 const { runPaperWriterEntry } = require('./paper-writer-entry');
-const { resumeRun, attachArtifactToState } = require('./paper-writer-runtime-state');
+const {
+  resumeRun,
+  attachArtifactToState,
+  startRun,
+  advancePaperWriterPhase,
+  pauseRun,
+  buildRunUiPayload,
+  summarizeRun,
+  shouldPauseRun,
+  buildUserCheckpointView,
+  createNextActionPlan,
+} = require('./paper-writer-runtime-state');
 const { saveSession, loadSession } = require('./paper-writer-session-store');
 const { readPdfToEvidencePack } = require('./paper-writer-pdf-adapter');
+const path = require('path');
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -76,7 +88,6 @@ async function handleResume(input, storeOptions) {
   const sessionRecord = saveSession(resumed, storeOptions);
 
   // build a minimal entry-compatible result from resumed state
-  const { buildRunUiPayload, summarizeRun, shouldPauseRun, buildUserCheckpointView, createNextActionPlan } = require('./paper-writer-runtime-state');
   const pauseDecision = shouldPauseRun(resumed);
 
   const entryResult = {
@@ -110,7 +121,7 @@ async function handlePdfOps(input, storeOptions) {
   const { artifact: pdfArtifact, warnings } = readPdfToEvidencePack({
     filePath: pdfPath,
     text: pdfText,
-    label: label || (pdfPath ? require('path').basename(pdfPath) : 'inline-text'),
+    label: label || (pdfPath ? path.basename(pdfPath) : 'inline-text'),
     riskFlags: input.riskFlags || [],
   });
 
@@ -143,7 +154,6 @@ async function handlePdfOps(input, storeOptions) {
   const withPdf = attachArtifactToState(state, pdfArtifact);
   const sessionRecord = saveSession(withPdf, storeOptions);
 
-  const { buildRunUiPayload, summarizeRun, shouldPauseRun, buildUserCheckpointView, createNextActionPlan } = require('./paper-writer-runtime-state');
   const pauseDecision = shouldPauseRun(withPdf);
 
   const entryResult = {
@@ -174,7 +184,6 @@ async function handlePdfOps(input, storeOptions) {
  * we pull what we need from runtime.summary and meta.
  */
 function rebuildStateFromEntryResult(entryResult) {
-  const { startRun, advancePaperWriterPhase, pauseRun } = require('./paper-writer-runtime-state');
   const routePacket = entryResult.meta?.routePacket;
   if (!routePacket) return null;
   const runtimeSummary = entryResult.runtime?.runSummary || entryResult.runtime?.summary || null;
@@ -215,14 +224,13 @@ function rebuildStateFromEntryResult(entryResult) {
   }
 
   // attach any artifacts from search / deliverable
-  const { attachArtifactToState: attach } = require('./paper-writer-runtime-state');
   const searchArtifact = entryResult.runtime?.searchArtifact;
   if (searchArtifact?.artifact_id) {
-    state = attach(state, searchArtifact);
+    state = attachArtifactToState(state, searchArtifact);
   }
   const deliverableArtifact = entryResult.runtime?.deliverableArtifact;
   if (deliverableArtifact?.artifact_id) {
-    state = attach(state, deliverableArtifact);
+    state = attachArtifactToState(state, deliverableArtifact);
   }
 
   return state;

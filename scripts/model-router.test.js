@@ -1,4 +1,4 @@
-const { scoreWorker, scorePlan, routeModel, getTierLabel, MODEL_TIERS } = require('./model-router');
+const { scoreWorker, scorePlan, routeModel, routeTier, getTierLabel, TIERS } = require('./model-router');
 
 function test(name, fn) {
   try {
@@ -72,25 +72,26 @@ test('scorePlan: write plan returns higher score', () => {
   assert(score >= 5, `expected >= 5, got ${score}`);
 });
 
-// Test routeModel
-test('routeModel: score 0 routes to gpt-5.4-mini', () => {
-  const model = routeModel(0);
-  assert(model === 'gpt-5.4-mini', `expected gpt-5.4-mini, got ${model}`);
+// Test routeTier (replaces routeModel — no longer returns model names)
+test('routeTier: score 0 is trivial', () => {
+  assert(routeTier(0) === 'trivial', `expected trivial, got ${routeTier(0)}`);
 });
 
-test('routeModel: score 5 routes to gpt-5.4-mini', () => {
-  const model = routeModel(5);
-  assert(model === 'gpt-5.4-mini', `expected gpt-5.4-mini, got ${model}`);
+test('routeTier: score 5 is simple', () => {
+  assert(routeTier(5) === 'simple', `expected simple, got ${routeTier(5)}`);
 });
 
-test('routeModel: score 10 routes to gpt-5.4', () => {
-  const model = routeModel(10);
-  assert(model === 'gpt-5.4', `expected gpt-5.4, got ${model}`);
+test('routeTier: score 10 is complex', () => {
+  assert(routeTier(10) === 'complex', `expected complex, got ${routeTier(10)}`);
 });
 
-test('routeModel: score 15 routes to gpt-5.4', () => {
-  const model = routeModel(15);
-  assert(model === 'gpt-5.4', `expected gpt-5.4, got ${model}`);
+test('routeTier: score 15 is hard', () => {
+  assert(routeTier(15) === 'hard', `expected hard, got ${routeTier(15)}`);
+});
+
+test('routeModel: backward-compat alias returns tier label', () => {
+  assert(routeModel(0) === 'trivial', `expected trivial, got ${routeModel(0)}`);
+  assert(routeModel(15) === 'hard', `expected hard, got ${routeModel(15)}`);
 });
 
 // Test getTierLabel

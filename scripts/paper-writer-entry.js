@@ -648,7 +648,8 @@ async function runPaperWriterEntry(input = {}) {
     baseResult = buildRouteRuntimeResult(state);
   }
 
-  const withSearchArtifact = await attachSearchArtifactToEntryResultWithMode(baseResult, routePacket, {
+  // Enrich the base result in-place instead of 5 layers of shallow-copy
+  let result = await attachSearchArtifactToEntryResultWithMode(baseResult, routePacket, {
     searchMode: input.searchMode || 'mock',
     searchProviders: input.searchProviders,
     fetchImpl: input.fetchImpl,
@@ -656,24 +657,23 @@ async function runPaperWriterEntry(input = {}) {
     browserUrl: input.browserUrl,
     sitesDir: input.sitesDir,
   });
-  const withDeliverableArtifact = attachDeliverableArtifactToEntryResult(withSearchArtifact, workflowIntent, recommendedDeliverableType);
-  const withSearchSummary = attachSearchSummaryToUi(withDeliverableArtifact);
-  const withStageLabel = attachStageLabelToUi(withSearchSummary, routePacket);
-  const result = attachGuidanceToUi(withStageLabel, routePacket, defenseReady, workflowIntent);
+  result = attachDeliverableArtifactToEntryResult(result, workflowIntent, recommendedDeliverableType);
+  result = attachSearchSummaryToUi(result);
+  result = attachStageLabelToUi(result, routePacket);
+  result = attachGuidanceToUi(result, routePacket, defenseReady, workflowIntent);
 
-  return {
-    ...result,
-    meta: {
-      entryMode,
-      goal,
-      selectedScenario,
-      routePacket,
-      defenseReady,
-      internalStages: getSupportedInternalStages(),
-      workflowIntent,
-      recommendedDeliverableType,
-    },
+  result.meta = {
+    entryMode,
+    goal,
+    selectedScenario,
+    routePacket,
+    defenseReady,
+    internalStages: getSupportedInternalStages(),
+    workflowIntent,
+    recommendedDeliverableType,
   };
+
+  return result;
 }
 
 module.exports = {
