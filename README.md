@@ -1,71 +1,88 @@
 # PaperMate
 
-A human-in-the-loop research and paper-writing agent.
+PaperMate is an early-stage research and thesis-writing copilot for Chinese university students.
 
-PaperMate helps you research and write academic papers — with you, not instead of you. It scouts literature, organizes notes, drafts sections, checks evidence, and prepares you for thesis defense, while pausing at every high-stakes decision for your approval.
+It is designed for students who do not yet know how to narrow a topic, search literature, organize evidence, and turn that material into a thesis structure. PaperMate is meant to assist the process, not replace the student.
 
-> **Status: Early experimental.** Core runtime and search layer are stable. End-to-end LLM execution is in progress. Feedback welcome.
+> Status: early open-source WIP. The runtime and search layer are usable. End-to-end LLM drafting is still in progress.
 
----
+## Positioning
 
-## What it does
+PaperMate is not trying to be a general-purpose "write my whole paper" agent.
 
-| Stage | What PaperMate does |
-|-------|---------------------|
-| Topic framing | Helps narrow and clarify your research question |
-| Literature scouting | Multi-source search (OpenAlex, Crossref, arXiv) with fusion and reranking |
-| Note organization | Structures candidate papers into annotated, defense-ready notes |
-| Drafting | Outlines and drafts sections based on collected evidence |
-| Claim review | Flags unsupported claims and weak evidence links |
-| Defense prep | Anticipates advisor questions and prepares reasoned answers |
-| Revision tracking | Tracks what has changed, what is pending, and what still needs evidence |
+The first public scope is narrower:
 
----
+- Chinese undergraduate and master's thesis workflows
+- Human-in-the-loop research and writing assistance
+- Evidence-first search, notes, and draft preparation
 
-## Why PaperMate
+The long-term architecture can support other languages and academic workflows, but that is not the current focus.
 
-Most paper-writing agents try to do everything automatically. PaperMate takes a different approach:
+## Who it is for
 
-- **Checkpoint-first**: pauses before overwriting anything or making irreversible decisions
-- **Evidence-first**: every claim traces back to a source you approved
-- **Transparent routing**: you see which stage is active and why
-- **Defense-ready notes**: every selected paper comes with a rationale you can explain to your advisor
+- Chinese university students who need help learning the paper-writing workflow
+- Builders who want an open, inspectable paper-writing runtime
+- Researchers exploring controlled, checkpoint-based writing assistance
 
----
+## What it is not
 
-## Search layer
+- A fully autonomous ghostwriting tool
+- A polished end-to-end thesis product
+- A universal solution for every school, field, or citation style
 
-The search layer is the most mature part of PaperMate:
+## What it does today
 
-- Multi-query rewrite (up to 5 variants per goal)
-- Multi-source recall: OpenAlex + Crossref + arXiv (via Chrome DevTools)
-- Reciprocal rank fusion with citation-count and query-match scoring
-- Seed-paper expansion via OpenAlex related/reference graph
-- DOI-level deduplication with canonical preference (journal > conference > preprint)
-- Structured `selection_reason` and `defense_notes` for every candidate
+- Routes a paper-related goal into a workflow stage
+- Runs multi-source literature search across OpenAlex, Crossref, and arXiv
+- Fuses, reranks, and deduplicates candidate papers
+- Produces structured candidate sets with explicit selection reasons
+- Keeps runtime state, checkpoints, and session artifacts organized
 
----
+## Why this project exists
+
+Most writing agents optimize for maximum automation. PaperMate takes a different path:
+
+- Human-in-the-loop: pauses before high-stakes actions
+- Evidence-first: claims should stay tied to sources
+- Workflow-aware: topic framing, search, notes, drafting, review, and revision are different stages
+- Open and hackable: the runtime, contracts, and prompts are visible in the repo
+
+This makes it a better fit for students who need support and structure, but still need to understand and defend what they write.
+
+## Current limitations
+
+- The search layer is the most mature part of the system
+- End-to-end LLM drafting is not fully wired into the runtime yet
+- Chinese thesis templates, school-specific rules, and citation formats are not standardized yet
+- Browser-backed retrieval requires local Chrome DevTools setup
 
 ## Quick start
 
+Install dependencies:
+
 ```bash
 npm install
-npm test
 ```
 
-Run the smoke scenario (no external APIs needed):
+Run tests:
+
+```bash
+npm run test:paper-writer
+```
+
+Run the smoke scenario:
 
 ```bash
 npm run smoke:paper-writer
 ```
 
-Try with real search (requires internet):
+Try the runtime in code:
 
 ```js
 const { runPaperWriterEntry } = require('./scripts/paper-writer-entry');
 
 const result = await runPaperWriterEntry({
-  goal: 'survey retrieval-augmented generation for biomedical QA',
+  goal: 'review retrieval-augmented generation for biomedical question answering',
   searchMode: 'real',
 });
 
@@ -73,52 +90,39 @@ console.log(result.ui.guidance);
 console.log(result.runtime.searchArtifact.items.length, 'candidates found');
 ```
 
-With browser-backed arXiv retrieval (requires Chrome with remote debugging):
+For browser-backed arXiv retrieval, start Chrome with remote debugging and use:
 
 ```js
 const result = await runPaperWriterEntry({
-  goal: 'survey retrieval-augmented generation for biomedical QA',
+  goal: 'review retrieval-augmented generation for biomedical question answering',
   searchMode: 'browser',
   browserUrl: 'http://127.0.0.1:9222',
 });
 ```
 
----
-
 ## Repository layout
 
-```
+```text
 PaperMate/
-├── agents/
-│   ├── paper-writer/       # Core agent definition and prompts
-│   └── papermate-*.md      # Supporting agent roles
-├── commands/               # Slash command entry points
-├── scripts/
-│   ├── paper-writer-*.js   # Runtime, search, session, host
-│   ├── chrome-devtools-*.js # Browser-backed search adapter
-│   ├── bb-browser-*.js     # Alternative browser adapter
-│   └── swarm-runtime*.js   # Multi-agent orchestration layer
-├── docs/
-│   ├── paper-writer/       # Design docs and runtime contracts
-│   └── codex-papermate.md  # Codex/Claude Code integration guide
-└── plugins/                # Audit plugin
+|- agents/                  # agent prompts and role definitions
+|- commands/                # slash-command entry points
+|- docs/                    # design docs and runtime contracts
+|- plugins/                 # plugin integrations
+|- scripts/                 # runtime, search, session, and adapter code
+|- README.md
+|- ROADMAP.md
 ```
 
----
+## Key files to read first
 
-## Requirements
-
-- Node.js 18+
-- For real search: internet access (OpenAlex and Crossref are free, no API key needed)
-- For browser search: Chrome with `--remote-debugging-port=9222`
-
----
+- `agents/paper-writer/paper-writer.md`: core workflow prompt
+- `scripts/paper-writer-search-layer.js`: most mature implementation today
+- `docs/paper-writer/paper-writer-runtime-contracts.md`: runtime contracts and data model
+- `docs/paper-writer/progress-map.md`: implementation maturity and gaps
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md).
-
----
+See `ROADMAP.md` for current priorities, limitations, and next milestones.
 
 ## License
 

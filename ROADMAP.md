@@ -1,56 +1,95 @@
 # Roadmap
 
+## Release framing
+
+PaperMate is being released as an early open-source WIP.
+
+The first public scope is deliberately narrow:
+
+- Chinese undergraduate and master's thesis workflows
+- Human-in-the-loop assistance instead of full automation
+- Search, evidence organization, and draft preparation first
+
+International and multilingual support may come later, but they are not the current release target.
+
 ## Current status
 
-Core runtime, session lifecycle, workflow routing, and search layer are stable with 128 passing tests.
+The core runtime shape already exists:
 
-The system can classify a research goal, route it to the right workflow stage, run multi-source literature search, fuse and rerank results, and return a structured candidate set with defense-ready notes — all without requiring an LLM call for the search path itself.
+- workflow routing
+- checkpoint-oriented execution
+- session and runtime state handling
+- multi-source literature search and reranking
 
-End-to-end LLM execution (where the agent actually drafts text based on the search results) is the next major milestone.
+The search layer is currently the strongest part of the project. It can already gather, fuse, and structure candidate papers without depending on an LLM for the main retrieval path.
 
----
+## What works today
 
-## P0 — End-to-end execution
+- Route a research goal into a paper-writing workflow stage
+- Search OpenAlex and Crossref directly
+- Extend search with browser-backed arXiv retrieval
+- Fuse, rerank, and deduplicate results
+- Return structured candidate sets with selection reasons and defense notes
+- Run local smoke flows for the paper-writer runtime
 
-- [ ] Connect `runPaperWriterEntry` output to an LLM call
-- [ ] Use search results as context for query rewriting
-- [ ] Generate a `related work` section draft from a candidate set
-- [ ] Emit a checkpoint asking the user to review before writing to disk
+## What is not done yet
 
-**Target**: one complete flow from goal → search → draft → checkpoint
+- End-to-end search -> draft -> review -> revision flow
+- Production LLM integration for assisted drafting
+- Stable CLI for non-agent users
+- School-specific Chinese thesis templates and formatting rules
+- Strong citation checking and evidence-gap review across full drafts
 
----
+## P0: Public release baseline
 
-## P1 — LLM integration
+- [ ] Keep the repo publishable and easy to understand
+- [ ] Make the README clearly state scope, limits, and intended users
+- [ ] Keep one reproducible smoke path working locally
+- [ ] Keep the search layer stable enough for external evaluation
+- [ ] Document setup for browser-backed retrieval
 
-- [ ] Use LLM to rewrite search queries (replace rule-based `buildQueryVariants`)
-- [ ] LLM-based reranking of search results
-- [ ] Evidence gap detection: flag claims that lack source support
-- [ ] Summarize each candidate paper in 2-3 sentences
+Target: a public repo that is honest, runnable, and understandable.
 
----
+## P1: End-to-end assisted writing
 
-## P2 — Stability and usability
+- [ ] Connect `runPaperWriterEntry` to an LLM-backed drafting path
+- [ ] Use search artifacts as drafting context
+- [ ] Generate outline and related-work style drafts from evidence
+- [ ] Emit a review checkpoint before any write-to-disk action
 
-- [ ] Retry with backoff for OpenAlex / Crossref (handle 429 / 503)
-- [ ] Per-provider timeout (prevent one slow provider from blocking the pipeline)
-- [ ] Atomic session writes (write-to-temp + rename)
-- [ ] CLI wrapper: `papermate --goal "..." --mode real`
-- [ ] Rewrite README for users who do not use Claude Code or Codex
+Target: one full assisted flow from goal -> search -> draft -> checkpoint.
 
----
+## P2: Chinese thesis workflow support
 
-## P3 — Polish and safety
+- [ ] Add support for common Chinese thesis stages: topic framing, outline, chapter drafting, revision
+- [ ] Add thesis-oriented section planning
+- [ ] Add evidence checks for literature review claims
+- [ ] Add revision support for advisor feedback loops
+- [ ] Add clearer support for Chinese academic writing style guidance
 
-- [ ] Chrome DevTools adapter: sandbox or sign community adapters before execution
-- [ ] Rate limiting for OpenAlex (max 10 req/s per their policy)
-- [ ] Session encryption option for sensitive research topics
-- [ ] `papermate init` wizard to configure search providers and browser path
+Target: become genuinely useful for Chinese students, not just technically interesting.
 
----
+## P3: Reliability and usability
 
-## Not planned (by design)
+- [ ] Add retries and backoff for OpenAlex and Crossref
+- [ ] Add per-provider timeouts
+- [ ] Improve session persistence safety
+- [ ] Add a CLI entry point for easier local use
+- [ ] Improve setup instructions for users outside Codex-style environments
 
-- Fully autonomous "write the whole paper" mode — PaperMate is intentionally human-in-the-loop
-- GUI / web interface — staying CLI and agent-native
-- Paid API search providers — OpenAlex and Crossref are free and sufficient for most cases
+Target: reduce operational friction and make testing easier.
+
+## P4: Broader support
+
+- [ ] Evaluate multilingual workflows after the Chinese-first path is stable
+- [ ] Explore support for non-Chinese university writing workflows
+- [ ] Revisit model routing and richer provider integration
+
+Target: expand only after the first workflow is coherent and validated.
+
+## Non-goals
+
+- Fully autonomous "write the whole thesis for me"
+- Silent overwriting of user drafts
+- Paid-provider lock-in as a requirement for core functionality
+- Pretending the project already solves every academic writing use case
