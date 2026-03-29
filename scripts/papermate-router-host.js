@@ -1,9 +1,12 @@
 const { runPapermateAgentTeam } = require('./papermate-agent-team');
 
 function buildOkResponse(result) {
+  const routerOutput = result?.outputs?.router || null;
   return {
     ok: true,
     mode: 'papermate-router',
+    final_result: routerOutput?.final_result || null,
+    router_output: routerOutput,
     result,
   };
 }

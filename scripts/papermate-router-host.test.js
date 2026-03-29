@@ -31,6 +31,9 @@ async function test(name, fn) {
 
     assert(response.ok === true, 'dispatch should succeed');
     assert(response.mode === 'papermate-router', 'host should expose papermate-router mode');
+    assert(response.final_result !== null, 'host should expose final_result as the primary delivery');
+    assert(response.final_result.constrainedByArtifacts === true, 'primary final_result should be artifact-constrained');
+    assert(Array.isArray(response.final_result.selected_sources) && response.final_result.selected_sources.length > 0, 'primary final_result should include selected sources');
     assert(response.result.mode === 'papermate-agent-team', 'host should return the executable agent-team result');
     assert(Array.isArray(response.result.executedRoles) && response.result.executedRoles.includes('papermate-router'), 'router role should execute');
     assert(response.result.outputs.router.entryResult.runtime.executionMode === 'swarm', 'router host should drive the swarm-backed thesis path');
@@ -50,7 +53,7 @@ async function test(name, fn) {
     });
 
     assert(response.ok === true, 'team should degrade to a structured response instead of crashing');
-    assert(response.result.outputs.router.entryResult.runtime.searchArtifact !== undefined, 'router should still produce a search artifact path');
+    assert(response.router_output.entryResult.runtime.searchArtifact !== undefined, 'router should still produce a search artifact path');
   });
 
   console.log(`\n${testsPassed} tests passed${testsFailed > 0 ? `, ${testsFailed} failed` : ''}!`);
