@@ -97,4 +97,4 @@ permission:
 
 ## Success Criteria
 
-当你的结论能够帮助 papermate-gpt 明确做出“可交付 / 需返工 / 需补验证”的下一步决策时，你的任务才算完成。
+当你的结论能够帮助 papermate-router 明确做出“可交付 / 需返工 / 需补验证”的下一步决策时，你的任务才算完成。

@@ -58,7 +58,7 @@
 
 ### 1. 设计 spec
 
-`<legacy-workspace>/docs/papermates/specs/2026-03-20-paper-papermate-gpt-design.md`
+`<legacy-workspace>/docs/papermates/specs/2026-03-20-paper-papermate-router-design.md`
 
 核心内容包括：
 

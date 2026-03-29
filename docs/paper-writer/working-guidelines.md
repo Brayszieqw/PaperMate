@@ -72,7 +72,7 @@
 
 如果需要引用历史设计，可参考：
 
-- `<legacy-workspace>/docs/papermates/specs/2026-03-20-paper-papermate-gpt-design.md`
+- `<legacy-workspace>/docs/papermates/specs/2026-03-20-paper-papermate-router-design.md`
 - `<legacy-workspace>/docs/papermates/plans/2026-03-20-paper-writer-implementation-plan.md`
 
 ## 5. 不跑偏约束

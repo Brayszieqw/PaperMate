@@ -194,6 +194,6 @@ questions:
 
 ## 与其他 Agent 的协作
 
-- **papermate-gpt** 在需要用户确认时调用你
-- 你收集用户选择后，把结果返回给 papermate-gpt
-- papermate-gpt 根据用户选择继续或调整流程
+- **papermate-router** 在需要用户确认时调用你
+- 你收集用户选择后，把结果返回给 papermate-router
+- papermate-router 根据用户选择继续或调整流程

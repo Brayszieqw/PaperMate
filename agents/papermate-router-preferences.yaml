@@ -1,5 +1,5 @@
 # PaperMate GPT 用户偏好配置
-# 位置: C:\Users\ljx\.config\opencode\agents\papermate-gpt-preferences.yaml
+# 位置: C:\Users\ljx\.config\opencode\agents\papermate-router-preferences.yaml
 # 用途: 控制自动化程度、checkpoint 行为、回滚策略
 
 automation_level: conservative  # conservative | balanced | aggressive

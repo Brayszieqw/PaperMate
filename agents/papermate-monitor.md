@@ -49,7 +49,7 @@ permission:
 - 若发现只读并行越界到 writer/review 阶段，至少判为 `health=warning`
 - 若 `plugin_health != healthy`，默认建议 `fallback_mode = minimal`
 - 若 `telemetry_gap >= major` 且用户明确要求日志/审计/复盘，建议 `fallback_mode = local-debug`
-- `fallback_mode=off` 不由 monitor 主动推荐；仅当用户明确禁用观测时由 `papermate-gpt` 决定
+- `fallback_mode=off` 不由 monitor 主动推荐；仅当用户明确禁用观测时由 `papermate-router` 决定
 
 规则：
 - 只做读和判断，不写文件

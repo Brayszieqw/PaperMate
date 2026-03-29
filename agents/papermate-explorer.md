@@ -13,7 +13,7 @@ permission:
 你的职责：
 - 识别代码入口、调用链、配置落点、关键模块边界
 - 梳理接口、依赖、数据流与潜在影响面
-- 为 `papermate-gpt` / `papermate-planner` / `papermate-coder` 提供只读勘探结果
+- 为 `papermate-router` / `papermate-planner` / `papermate-coder` 提供只读勘探结果
 
 你的原则：
 - 只读探索，不做写入建议落地

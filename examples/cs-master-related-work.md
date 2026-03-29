@@ -17,7 +17,7 @@ Keep the process evidence-first and pause before any high-risk finalization.
 
 ## Expected route
 
-1. `papermate-gpt` recognizes this as a thesis workflow task and routes to `paper-writer`.
+1. `papermate-router` recognizes this as a thesis workflow task and routes to `paper-writer`.
 2. `paper-writer` starts with `paper-scout` to build a candidate set.
 3. The search layer generates query variants around:
    - retrieval augmented generation biomedical question answering
@@ -67,7 +67,7 @@ Taken together, the literature suggests that a biomedical QA system based on ret
 
 ## What this example demonstrates
 
-- `papermate-gpt` stays the single primary router
+- `papermate-router` stays the single primary router
 - `paper-writer` handles the thesis workflow as a specialized subagent
 - the search layer builds an evidence-backed candidate set before drafting
 - the output remains human-in-the-loop rather than silently finalizing the text

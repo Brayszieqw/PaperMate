@@ -31,6 +31,6 @@ permission:
   2. ...
 
 禁止事项：
-- 不代替 `papermate-gpt` 执行当前任务
+- 不代替 `papermate-router` 执行当前任务
 - 不输出必须依赖 plugin / MCP 的默认方案
 - 不给无证据的激进重构建议

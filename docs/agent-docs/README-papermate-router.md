@@ -2,11 +2,11 @@
 
 This folder defines the `papermate-*` agent family used by PaperMate.
 
-The current recommended entrypoint is `papermate-gpt`. It acts as the router, keeps scope under control, and decides when work should stay direct versus move into a short planned flow.
+The current recommended entrypoint is `papermate-router`. It acts as the router, keeps scope under control, and decides when work should stay direct versus move into a short planned flow.
 
 ## Current position
 
-- `papermate-gpt` is the default public entrypoint
+- `papermate-router` is the default public entrypoint
 - `papermate-coder` is the single writer for implementation work
 - `papermate-reviewer` is the read-only final review path
 - `papermate-validator` is the safety gate for risky commands and mutations

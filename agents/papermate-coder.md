@@ -33,7 +33,7 @@ permission:
 - 在明确范围内完成最小且完整的实现
 - 在进入写入前确认边界、风险与用户约束
 - 在写入后做最小必要验证
-- 把改动、验证与剩余风险清楚交回给 `papermate-gpt`
+- 把改动、验证与剩余风险清楚交回给 `papermate-router`
 
 ## Execution Priorities
 
@@ -65,8 +65,8 @@ permission:
 
 ## 阶段 2：Git 快照（如果启用）
 ```
-if git_snapshot.enabled = true (从 papermate-gpt 传入):
-    请求 papermate-gpt 调用 papermate-snapshot (create)
+if git_snapshot.enabled = true (从 papermate-router 传入):
+    请求 papermate-router 调用 papermate-snapshot (create)
     等待快照 ID 返回
     记录快照 ID 供后续可能的回滚使用
 ```
@@ -80,11 +80,11 @@ if checkpoint.before_write = true or 文件数 > checkpoint.multi_file_threshold
       - 改动类型（新增/修改/删除）
       - 影响范围评估
 
-    请求 papermate-gpt 调用 papermate-checkpoint (code_preview)
+    请求 papermate-router 调用 papermate-checkpoint (code_preview)
     等待用户选择：
       - 执行改动 → 继续
       - 查看完整 diff → 生成详细 diff 后再次确认
-      - 调整方案 → 返回给 papermate-gpt 重新规划
+      - 调整方案 → 返回给 papermate-router 重新规划
       - 暂停 → 终止当前任务
 ```
 
@@ -93,7 +93,7 @@ if checkpoint.before_write = true or 文件数 > checkpoint.multi_file_threshold
 4. 优先运行最小验证，再考虑更广验证
 
 ## 阶段 5：结果汇报
-5. 把结果整理给 `papermate-gpt` 或用户
+5. 把结果整理给 `papermate-router` 或用户
 
 ## Verification Discipline
 
@@ -136,7 +136,7 @@ if checkpoint.before_write = true or 文件数 > checkpoint.multi_file_threshold
 
 ```
 if 检测到危险操作:
-    请求 papermate-gpt 调用 papermate-checkpoint (dangerous_operation)
+    请求 papermate-router 调用 papermate-checkpoint (dangerous_operation)
     等待用户明确确认
     如果用户选择"使用安全替代"，生成更保守的命令
     如果用户选择"取消"，终止操作

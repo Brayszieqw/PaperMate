@@ -80,7 +80,7 @@ permission:
 ## Plan
 - task_type: <answer|research|coding|mixed>
 - complexity: <low|medium|high>
-- owner: <papermate-gpt|papermate-explorer|papermate-librarian|papermate-researcher|papermate-oracle|papermate-coder|papermate-reviewer|papermate-validator|papermate-monitor|papermate-optimizer|papermate-logger>
+- owner: <papermate-router|papermate-explorer|papermate-librarian|papermate-researcher|papermate-oracle|papermate-coder|papermate-reviewer|papermate-validator|papermate-monitor|papermate-optimizer|papermate-logger>
 - reviewer_needed: <yes|no>
 - optional_roles:
   - <none|papermate-reviewer|papermate-validator|papermate-monitor|papermate-optimizer|papermate-logger>
@@ -110,7 +110,7 @@ permission:
 计划生成后，根据 automation_level 决定是否需要用户确认：
 
 if automation_level = conservative and task_type = coding:
-    请求 papermate-gpt 调用 papermate-checkpoint (plan_approval)
+    请求 papermate-router 调用 papermate-checkpoint (plan_approval)
     等待用户选择：
       - 批准执行 → 继续
       - 修改计划 → 用户提供修改意见，重新生成计划
@@ -118,7 +118,7 @@ if automation_level = conservative and task_type = coding:
       - 取消任务 → 终止
 
 elif automation_level = balanced and complexity = high:
-    请求 papermate-gpt 调用 papermate-checkpoint (plan_approval)
+    请求 papermate-router 调用 papermate-checkpoint (plan_approval)
     但默认推荐"批准执行"
 
 else:  # aggressive 或 complexity = low
@@ -138,4 +138,4 @@ else:  # aggressive 或 complexity = low
 
 ## Success Criteria
 
-当你的计划能够帮助 `papermate-gpt` 明确知道“谁来做、是否并行、先走哪条纪律路径、接下来按什么顺序推进”时，你的任务才算完成。
+当你的计划能够帮助 `papermate-router` 明确知道“谁来做、是否并行、先走哪条纪律路径、接下来按什么顺序推进”时，你的任务才算完成。

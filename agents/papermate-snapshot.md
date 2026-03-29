@@ -167,23 +167,23 @@ stage: pre-write | post-write | pre-review | rollback-point
 ### 与 papermate-coder 的协作
 
 ```
-papermate-gpt 调用流程：
+papermate-router 调用流程：
 
-1. papermate-gpt → papermate-snapshot (create)
+1. papermate-router → papermate-snapshot (create)
    ↓
 2. papermate-snapshot 创建快照，返回 snapshot_id
    ↓
-3. papermate-gpt → papermate-coder (write)
+3. papermate-router → papermate-coder (write)
    ↓
 4. papermate-coder 完成写入
    ↓
-5. papermate-gpt → papermate-reviewer (review)
+5. papermate-router → papermate-reviewer (review)
    ↓
 6. 如果 review 失败：
-   papermate-gpt → papermate-checkpoint (ask user)
+   papermate-router → papermate-checkpoint (ask user)
    ↓
    如果用户选择回滚：
-   papermate-gpt → papermate-snapshot (rollback)
+   papermate-router → papermate-snapshot (rollback)
 ```
 
 ---
@@ -244,7 +244,7 @@ error: null | {code, message, suggestion}
 
 ## 配置读取
 
-从 `papermate-gpt-preferences.yaml` 读取配置：
+从 `papermate-router-preferences.yaml` 读取配置：
 
 ```yaml
 git_snapshot:

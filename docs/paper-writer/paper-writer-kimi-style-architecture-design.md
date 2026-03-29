@@ -19,7 +19,7 @@
 这个目标同时继承两条设计脉络：
 
 1. **Kimi 风格**：总控、动态路由、产物导向、半自主、可并行、可恢复
-2. **papermate-gpt 风格**：方法纪律、单 writer、checkpoint、review 闸门、风险边界
+2. **papermate-router 风格**：方法纪律、单 writer、checkpoint、review 闸门、风险边界
 
 ## 2. 用户目标与优先级约束
 
@@ -297,7 +297,7 @@ Kimi 强调并行，但 `paper-writer` 的并行必须受领域约束。
 - 有 artifact 产出
 - 有状态与恢复
 
-### papermate-gpt 化要求
+### papermate-router 化要求
 - 有纪律
 - 有边界
 - 有 checkpoint
