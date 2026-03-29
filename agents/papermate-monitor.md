@@ -2,8 +2,6 @@
 description: papermate-* family 插件健康与链路巡检员，判定 plugin health、telemetry gap、并行越界与恢复策略
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-temperature: 0.1
 permission:
   bash: deny
   edit: deny

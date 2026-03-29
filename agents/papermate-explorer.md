@@ -2,8 +2,6 @@
 description: 统一 papermate-* family 勘探员，负责代码库只读勘探、入口梳理与依赖边界识别
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-temperature: 0.1
 permission:
   bash: deny
   edit: deny

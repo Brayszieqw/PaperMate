@@ -90,6 +90,27 @@ npm run test:paper-writer
 npm run smoke:paper-writer
 ```
 
+## Use with Claude Code
+
+For local development, load this repository as a session plugin directory:
+
+```bash
+claude --plugin-dir ~/PaperMate
+```
+
+This makes Claude Code load:
+
+- `/paper-writer-run`
+- the `papermate-*` agents
+- the `paper-writer` thesis workflow agent
+- the repo-local skills in `skills/`
+
+If PaperMate is later published to a Claude Code marketplace, install it with:
+
+```bash
+claude plugin install papermate
+```
+
 Try the runtime in code:
 
 ```js
@@ -144,6 +165,15 @@ PaperMate/
 ## Roadmap
 
 See [ROADMAP.md](./ROADMAP.md) for current priorities, limitations, and next milestones.
+
+## Example flow
+
+See [examples/cs-master-related-work.md](./examples/cs-master-related-work.md) for a complete example covering:
+
+- thesis-oriented routing
+- literature search
+- candidate set construction
+- related-work drafting
 
 ## Contributing
 

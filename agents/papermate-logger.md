@@ -2,8 +2,6 @@
 description: 统一 papermate-* family 日志摘要员，负责根据 log_packet 生成标准总结草稿，由 papermate-gpt 自己落盘
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-temperature: 0
 permission:
   edit: deny
   bash: deny

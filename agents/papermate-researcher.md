@@ -2,8 +2,6 @@
 description: 统一 papermate-* family 研究专家，负责长材料压缩、证据综合、文档对比和结论提炼
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-temperature: 0.2
 permission:
   bash: deny
   edit: deny

@@ -1,9 +1,7 @@
 ---
 description: Claude Code 环境中的论文总控入口；用于缩题收束、文献初筛、笔记入库、开题提纲、章节起草、PDF 精读、翻译、引用核验、答辩准备与修订闭环协调
-mode: primary
+mode: subagent
 color: "#4CAF50"
-model: openai/gpt-5.4
-temperature: 0.2
 permission:
   task:
     "*": allow

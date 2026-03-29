@@ -2,8 +2,6 @@
 description: Git 快照管理器，负责改动前自动保存、回滚、历史追踪
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-temperature: 0.1
 permission:
   bash: allow
   edit: deny

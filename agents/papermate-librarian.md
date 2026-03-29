@@ -2,8 +2,6 @@
 description: 统一 papermate-* family 资料馆员，负责外部资料、官方文档与生态来源搜集及可信度排序
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-temperature: 0.1
 permission:
   bash: deny
   edit: deny

@@ -2,8 +2,6 @@
 description: Checkpoint 交互助手，负责在关键决策点向用户展示选项并收集确认
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-temperature: 0.1
 permission:
   bash: deny
   edit: deny

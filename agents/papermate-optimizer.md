@@ -2,8 +2,6 @@
 description: papermate-* family 调度优化员，基于历史日志分析预算、并行策略、重复勘探与角色命中率
 mode: subagent
 hidden: true
-model: openai/gpt-5.4
-temperature: 0.1
 permission:
   bash: deny
   edit: deny

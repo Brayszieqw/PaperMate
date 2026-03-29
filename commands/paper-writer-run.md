@@ -1,4 +1,5 @@
 ---
+name: paper-writer-run
 description: 启动或继续 paper-writer 论文任务（new / resume / pdf_ops 三种模式）
 ---
 
