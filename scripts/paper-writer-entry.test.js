@@ -252,6 +252,35 @@ async function test(name, fn) {
     assert(result.runtime.searchArtifact.trace.providers_used.includes('chrome_cdp_arxiv'), 'browser-backed mode should record the browser provider in trace');
   });
 
+  await test('runPaperWriterEntry can execute a minimal thesis-scout swarm path', async () => {
+    const result = await runPaperWriterEntry({
+      goal: '鍏堢瓫璁烘枃锛岀劧鍚庣户缁捣鑽?related work',
+      executionMode: 'swarm',
+      searchMode: 'mock',
+    });
+
+    assert(result.meta.executionMode === 'swarm', 'meta should expose swarm execution mode');
+    assert(result.runtime.executionMode === 'swarm', 'runtime should expose swarm execution mode');
+    assert(result.runtime.swarmExecution !== null, 'runtime should include swarm execution details');
+    assert(result.runtime.swarmExecution.mode === 'swarm', 'swarm execution should report swarm mode');
+    assert(Array.isArray(result.runtime.swarmExecution.startedReadWorkers) && result.runtime.swarmExecution.startedReadWorkers.length >= 2, 'swarm path should start multiple read workers');
+    assert(result.runtime.searchArtifact.artifact_type === 'literature_candidate_set', 'swarm path should still attach a candidate set');
+    assert(result.runtime.activeArtifactIds.includes(result.runtime.searchArtifact.artifact_id), 'swarm candidate set should be reflected in active artifacts');
+    assert(result.ui.swarmSummary !== null, 'ui should expose a swarm summary');
+    assert(result.ui.swarmSummary.itemCount === result.runtime.searchArtifact.items.length, 'swarm summary should reflect candidate-set size');
+  });
+
+  await test('runPaperWriterEntry keeps non-search routes out of swarm scout mode', async () => {
+    const result = await runPaperWriterEntry({
+      goal: 'pdf deep-read extract experiment metrics and setup',
+      executionMode: 'swarm',
+    });
+
+    assert(result.meta.routePacket.domain_focus === 'ops', 'ops-focused goal should still map to ops');
+    assert(result.meta.executionMode === 'route', 'ops route should stay on normal route mode');
+    assert(result.runtime.swarmExecution === undefined, 'ops route should not attach swarm execution details');
+  });
+
   await test('runPaperWriterEntry attaches a mock search artifact for library-oriented routes', async () => {
     const result = await runPaperWriterEntry({
       goal: '把这些论文整理成结构化笔记和文献库',

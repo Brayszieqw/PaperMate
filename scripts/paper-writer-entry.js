@@ -12,6 +12,7 @@ const {
 const { createRoutePacket, createArtifactRef } = require('./paper-writer-runtime-interface');
 const { buildMockCandidateSet, buildRealCandidateSet } = require('./paper-writer-search-layer');
 const { createRuntimeId } = require('./paper-writer-utils');
+const { shouldUsePaperWriterAgentTeam, runPaperWriterAgentTeam } = require('./paper-writer-agent-team');
 
 function classifyGoal(goal) {
   const text = String(goal || '').toLowerCase();
@@ -276,6 +277,10 @@ function shouldAttachSearchArtifact(routePacket) {
   return ['draft', 'library', 'mixed', 'scout', 'proposal-outline'].includes(routePacket.domain_focus);
 }
 
+function shouldUseSwarmScoutPath(routePacket, options = {}) {
+  return shouldUsePaperWriterAgentTeam(routePacket, options);
+}
+
 async function attachSearchArtifactToEntryResult(result, routePacket) {
   if (!shouldAttachSearchArtifact(routePacket)) {
     return result;
@@ -304,6 +309,9 @@ async function attachSearchArtifactToEntryResult(result, routePacket) {
 
 async function attachSearchArtifactToEntryResultWithMode(result, routePacket, options = {}) {
   if (!shouldAttachSearchArtifact(routePacket)) {
+    return result;
+  }
+  if (result.runtime?.searchArtifact) {
     return result;
   }
 
@@ -336,6 +344,35 @@ async function attachSearchArtifactToEntryResultWithMode(result, routePacket, op
       ...result.runtime,
       activeArtifactIds,
       searchArtifact,
+    },
+  };
+}
+
+function attachSwarmScoutToEntryResult(result, swarmScoutResult = null) {
+  if (!swarmScoutResult?.searchArtifact) {
+    return result;
+  }
+
+  const activeArtifactIds = Array.isArray(result.runtime?.activeArtifactIds)
+    ? [...result.runtime.activeArtifactIds]
+    : [];
+
+  if (!activeArtifactIds.includes(swarmScoutResult.searchArtifact.artifact_id)) {
+    activeArtifactIds.unshift(swarmScoutResult.searchArtifact.artifact_id);
+  }
+
+  return {
+    ...result,
+    runtime: {
+      ...result.runtime,
+      activeArtifactIds,
+      searchArtifact: swarmScoutResult.searchArtifact,
+      executionMode: 'swarm',
+      swarmExecution: swarmScoutResult.teamExecution,
+    },
+    ui: {
+      ...result.ui,
+      swarmSummary: swarmScoutResult.teamSummary,
     },
   };
 }
@@ -619,6 +656,7 @@ async function runPaperWriterEntry(input = {}) {
 
   let baseResult;
   let selectedScenario = explicitScenario || null;
+  let swarmScoutResult = null;
 
   if (explicitScenario) {
     baseResult = explicitScenario === 'active-draft'
@@ -648,8 +686,16 @@ async function runPaperWriterEntry(input = {}) {
     baseResult = buildRouteRuntimeResult(state);
   }
 
+  if (!explicitScenario && shouldUseSwarmScoutPath(routePacket, input)) {
+    swarmScoutResult = await runPaperWriterAgentTeam(routePacket, {
+      ...input,
+      workflowIntent,
+    });
+  }
+
   // Enrich the base result in-place instead of 5 layers of shallow-copy
-  let result = await attachSearchArtifactToEntryResultWithMode(baseResult, routePacket, {
+  let result = attachSwarmScoutToEntryResult(baseResult, swarmScoutResult);
+  result = await attachSearchArtifactToEntryResultWithMode(result, routePacket, {
     searchMode: input.searchMode || 'mock',
     searchProviders: input.searchProviders,
     fetchImpl: input.fetchImpl,
@@ -671,6 +717,7 @@ async function runPaperWriterEntry(input = {}) {
     internalStages: getSupportedInternalStages(),
     workflowIntent,
     recommendedDeliverableType,
+    executionMode: swarmScoutResult ? 'swarm' : entryMode,
   };
 
   return result;

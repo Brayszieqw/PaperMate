@@ -6,7 +6,9 @@
   "license": "AGPL-3.0",
   "scripts": {
     "test:paper-writer": "node --test scripts/paper-writer-*.test.js",
+    "test:papermate-agent-team": "node scripts/papermate-agent-team.test.js && node scripts/papermate-router-host.test.js && node scripts/paper-writer-agent-team.test.js",
     "smoke:paper-writer": "node scripts/paper-writer-runtime-smoke.js",
+    "smoke:papermate-router": "echo {\"goal\":\"survey papers and draft related work for a biomedical QA thesis\",\"executionMode\":\"swarm\",\"searchMode\":\"mock\"} | node scripts/papermate-router-host.js",
     "status:bb-browser": "powershell -ExecutionPolicy Bypass -File .\\scripts\\bb-browser-status.ps1",
     "smoke:bb-browser": "node scripts/bb-browser-runtime-smoke.js",
     "status:chrome-devtools": "node scripts/chrome-devtools-status.js",
